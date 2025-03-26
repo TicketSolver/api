@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Builder;
+
 namespace TicketSolver.Api.Main;
 
 public static class ConfigureApp

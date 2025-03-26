@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
 using TicketSolver.Api.Settings.Swagger;
 
 namespace TicketSolver.Api.Main;

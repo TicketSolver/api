@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace TicketSolver.Api.Main;
 
 public static class ConfigureDependencies
