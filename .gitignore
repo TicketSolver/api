@@ -339,4 +339,6 @@ ASALocalRun/
 /api-envio-mensagem-brint/Logs/20211124-0523504EventoRecebido.txt
 /api-envio-mensagem-brint/Logs/20211124-0700373Evento201EnvioAntes.txt
 /api-envio-mensagem-brint/Logs/20211124-0700373Evento201EnvioDepois.txt
-TicketSolver.Api/.env.db
+
+.env
+.env.*
