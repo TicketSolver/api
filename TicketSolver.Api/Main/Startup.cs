@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
 using TicketSolver.Api.Settings.Swagger;
 
 namespace TicketSolver.Api.Main;
@@ -10,6 +8,7 @@ public static class Startup
     {
         ConfigureDbConnection.Setup(builder.Services, builder.Configuration);
         ConfigureDependencies.Setup(builder.Services);
+        ConfigureRepositories.Setup(builder.Services);
         ConfigureServices.Setup(builder.Services);
         SwaggerExtensions.AddSwagger(builder);
 
