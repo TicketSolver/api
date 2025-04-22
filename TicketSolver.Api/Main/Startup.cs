@@ -10,8 +10,8 @@ public static class Startup
         builder.Configuration.AddEnvironmentBasedDotEnv();
         
         ConfigureDbConnection.Setup(builder.Services, builder.Configuration);
-        ConfigureDependencies.Setup(builder.Services);
         ConfigureIdentity.Setup(builder.Services);
+        ConfigureDependencies.Setup(builder.Services);
         ConfigureRepositories.Setup(builder.Services);
         ConfigureServices.Setup(builder.Services);
         SwaggerExtensions.AddSwagger(builder);

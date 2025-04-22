@@ -1,5 +1,7 @@
 using TicketSolver.Domain.Repositories.Tenant;
 using TicketSolver.Domain.Repositories.Tenant.Interfaces;
+using TicketSolver.Domain.Repositories.Ticket;
+using TicketSolver.Domain.Repositories.Ticket.Interfaces;
 using TicketSolver.Domain.Repositories.User;
 using TicketSolver.Domain.Repositories.User.Interfaces;
 
@@ -11,5 +13,7 @@ public static class ConfigureRepositories
     {
         services.AddTransient<ITenantsRepository, TenantsRepository>();
         services.AddTransient<IUsersRepository, UsersRepository>();
+        services.AddTransient<ITicketsRepository, TicketsRepository>();
+        
     }
 }
