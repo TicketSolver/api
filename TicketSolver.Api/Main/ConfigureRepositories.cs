@@ -11,9 +11,9 @@ public static class ConfigureRepositories
 {
     public static void Setup(IServiceCollection services)
     {
-        services.AddTransient<ITenantsRepository, TenantsRepository>();
         services.AddTransient<IUsersRepository, UsersRepository>();
         services.AddTransient<ITicketsRepository, TicketsRepository>();
-        
+        services.AddTransient<ITenantsRepository, TenantsRepository>();
+
     }
 }

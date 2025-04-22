@@ -7,9 +7,9 @@ namespace TicketSolver.Domain.Repositories.Tenant;
 
 public class TenantsRepository(EFContext context) : EFRepositoryBase<Tenants>(context), ITenantsRepository
 {
-    public async Task<IEnumerable<Tenants>> GetAllAsync()
+    public async Task<IEnumerable<Tenants>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return await GetAll().ToListAsync();
+        return await GetAll().ToListAsync(cancellationToken);
     }
     public async Task<Tenants?> GetTenantByKeyAsync(string key, CancellationToken cancellationToken)
     {
@@ -20,8 +20,8 @@ public class TenantsRepository(EFContext context) : EFRepositoryBase<Tenants>(co
 
     public async Task<Tenants?> AddTenantAsync(Tenants tenant, CancellationToken cancellationToken)
     {
-        await context.Tenants.AddAsync(tenant, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
+        await Context.Tenants.AddAsync(tenant, cancellationToken);
+        await Context.SaveChangesAsync(cancellationToken);
         return tenant;
     }
     

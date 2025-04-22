@@ -23,6 +23,6 @@ public class TenantsService(
     
     public async Task<IEnumerable<Tenants>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return await tenantsRepository.GetAllAsync();
+        return await tenantsRepository.GetAllAsync(cancellationToken);
     }
 }

@@ -5,7 +5,7 @@ namespace TicketSolver.Domain.Repositories.Tenant.Interfaces;
 
 public interface ITenantsRepository : IEFRepositoryBase<Tenants>
 {
-    Task<IEnumerable<Tenants>> GetAllAsync();
+    Task<IEnumerable<Tenants>> GetAllAsync(CancellationToken cancellationToken);
     
     Task<Tenants?> GetTenantByKeyAsync(string key, CancellationToken cancellationToken);
     

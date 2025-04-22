@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using TicketSolver.Api.Models;
 using TicketSolver.Domain.Persistence.Tables.Tenant;
-using TicketSolver.Domain.Services.Tenant;
-
+using TicketSolver.Domain.Services.Tenant.Interfaces;
 namespace TicketSolver.Api.Controllers;
 
-public class TenantsController(TenantsService service) : ControllerBase
+public class TenantsController(ITenantsService service) : ControllerBase
 {
-    private readonly TenantsService _service = service;
+    private readonly ITenantsService _service = service;
 
     [HttpGet]
     [Route("api/tenants")]
