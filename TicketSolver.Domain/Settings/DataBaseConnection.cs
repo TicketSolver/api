@@ -23,17 +23,17 @@ public class DataBaseConnection
     {
         get
         {
-            if (_dbConnection == null)
+            if (_provider == null)
             {
                 ReadEnvDbConnection();
             }
-            return _dbConnection;
+            return _provider;
         }
     }
 
     private static void ReadEnvDbConnection()
     {
-        Env.Load(".env.db");
+        Env.Load(".env");
         var host = Environment.GetEnvironmentVariable("DB_HOST");
         var database = Environment.GetEnvironmentVariable("DB_NAME");
         var user = Environment.GetEnvironmentVariable("DB_USER");

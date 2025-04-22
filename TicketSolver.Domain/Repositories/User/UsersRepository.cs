@@ -17,4 +17,11 @@ public class UsersRepository(EFContext context) : EFRepositoryBase<Users>(contex
         return GetAll()
             .Where(u=> u.IdentityUserId == identityUserId);
     }
+    
+    public IQueryable<Users> GetById(int id)
+    {
+        return GetAll()
+            .Where(u=> u.Id == id);
+    }
+
 }
