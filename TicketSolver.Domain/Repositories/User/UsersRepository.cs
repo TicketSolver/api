@@ -4,7 +4,7 @@ using TicketSolver.Domain.Repositories.User.Interfaces;
 
 namespace TicketSolver.Domain.Repositories.User;
 
-public class UsersReporitory(EFContext context) : EFRepositoryBase<Users>(context), IUsersRepository
+public class UsersRepository(EFContext context) : EFRepositoryBase<Users>(context), IUsersRepository
 {
     public IQueryable<Users> GetByEmail(string email)
     {
