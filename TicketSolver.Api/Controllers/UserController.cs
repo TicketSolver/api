@@ -1,21 +1,21 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TicketSolver.Api.Data;
-using TicketSolver.Api.Models;
+using TicketSolver.Domain.Persistence;
+using TicketSolver.Domain.Persistence.Db.Tables;
 
 namespace TicketSolver.Api.Controllers;
     [ApiController]
     [Route("api/[controller]")]
-    public class UsersController(AppDbContext context) : ControllerBase
+    public class UsersController(EFContext context) : ControllerBase
     {
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
         {
             return await context.Users.ToListAsync();
         }
         
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<ActionResult<Users>> GetUser(int id)
         {
             var user = await context.Users.FindAsync(id);
             if (user == null)
@@ -25,7 +25,7 @@ namespace TicketSolver.Api.Controllers;
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<Users>> PostUsers(Users user)
         {
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -34,7 +34,7 @@ namespace TicketSolver.Api.Controllers;
         
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        public async Task<IActionResult> PutUser(int id, Users user)
         {
             if (id != user.Id)
                 return BadRequest();

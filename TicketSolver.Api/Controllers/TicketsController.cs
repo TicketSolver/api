@@ -1,25 +1,24 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TicketSolver.Api.Data;
-using TicketSolver.Api.Models;
-using TicketSolver.Domain.Persistence.Db;
+using TicketSolver.Domain.Persistence;
+using TicketSolver.Domain.Persistence.Db.Tables;
 
 namespace TicketSolver.Api.Controllers;
 
 
     [ApiController]
     [Route("api/[controller]")]
-    public class TicketsController(AppDbContext context) : ControllerBase
+    public class TicketsController(EFContext context) : ControllerBase
     {
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Ticket>>> GetTickets()
+        public async Task<ActionResult<IEnumerable<Tickets>>> GetTickets()
         {
             return await context.Tickets.ToListAsync();
         }
         
         [HttpGet("{id}")]
-        public async Task<ActionResult<Ticket>> GetTicket(int id)
+        public async Task<ActionResult<Tickets>> GetTicket(int id)
         {
             var ticket = await context.Tickets.FindAsync(id);
             if (ticket == null)
@@ -29,7 +28,7 @@ namespace TicketSolver.Api.Controllers;
         }
         
         [HttpPost]
-        public async Task<ActionResult<Ticket>> PostTicket(Ticket ticket)
+        public async Task<ActionResult<Tickets>> PostTicket(Tickets ticket)
         {
             ticket.CreatedAt = DateTime.UtcNow;
             context.Tickets.Add(ticket);
@@ -38,7 +37,7 @@ namespace TicketSolver.Api.Controllers;
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTicket(int id, Ticket ticket)
+        public async Task<IActionResult> PutTicket(int id, Tickets ticket)
         {
             if (id != ticket.Id)
                 return BadRequest();

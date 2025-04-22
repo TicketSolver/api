@@ -12,7 +12,6 @@ public static class Startup
         ConfigureDependencies.Setup(builder.Services);
         ConfigureServices.Setup(builder.Services);
         SwaggerExtensions.AddSwagger(builder);
-
         var app = builder.Build();
         ConfigureApp.Setup(app, builder.Environment.IsDevelopment());
         SwaggerExtensions.UseSwagger(app, builder);

@@ -1,6 +1,6 @@
-namespace TicketSolver.Api.Models;
+namespace TicketSolver.Domain.Persistence.Db.Tables;
 
-public class Ticket
+public class Tickets
 {
     public int Id { get; set; }
     public string Title { get; set; } = null!;

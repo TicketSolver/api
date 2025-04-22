@@ -1,4 +1,4 @@
-namespace TicketSolver.Api.Models.Enums
+namespace TicketSolver.Domain.Enums
 {
     public enum UserType
     {

@@ -1,8 +1,8 @@
-using TicketSolver.Api.Models.Enums;
+using TicketSolver.Domain.Enums;
 
-namespace TicketSolver.Api.Models;
+namespace TicketSolver.Domain.Persistence.Db.Tables;
 
-public class User
+public class Users
 {
     public int Id { get; set; }
     public string AspNetUserId { get; set; }
