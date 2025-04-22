@@ -23,4 +23,5 @@ public class UsersRepository(EFContext context) : EFRepositoryBase<Users>(contex
         return GetAll()
             .Where(u=> u.Id == id);
     }
+
 }

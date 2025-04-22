@@ -12,6 +12,7 @@ public static class Startup
         ConfigureDbConnection.Setup(builder.Services, builder.Configuration);
         ConfigureIdentity.Setup(builder.Services);
         ConfigureDependencies.Setup(builder.Services);
+        ConfigureIdentity.Setup(builder.Services);
         ConfigureRepositories.Setup(builder.Services);
         ConfigureServices.Setup(builder.Services);
         SwaggerExtensions.AddSwagger(builder);
