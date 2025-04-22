@@ -7,4 +7,6 @@ public interface IUsersRepository : IEFRepositoryBase<Users>
 {
     IQueryable<Users> GetByEmail(string email);
     IQueryable<Users> GetByIdentityUserId(string identityUserId);
+
+    IQueryable<Users> GetById(int id);
 }

@@ -30,8 +30,9 @@ public static class ConfigureDbConnection
         
             case "MYSQL":
                 services.AddDbContext<EFContext>(options =>
-                    options.UseMySQL(sqlConnectionString)
-                );
+                {
+                    if (sqlConnectionString != null) options.UseMySQL(sqlConnectionString);
+                });
                 break;
         
             case "POSTGRESS":
