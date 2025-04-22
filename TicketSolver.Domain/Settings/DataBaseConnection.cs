@@ -33,7 +33,7 @@ public class DataBaseConnection
 
     private static void ReadEnvDbConnection()
     {
-        Env.Load(".env.db");
+        Env.Load(".env");
         var host = Environment.GetEnvironmentVariable("DB_HOST");
         var database = Environment.GetEnvironmentVariable("DB_NAME");
         var user = Environment.GetEnvironmentVariable("DB_USER");
