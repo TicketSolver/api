@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TicketSolver.Api.Models;
 using TicketSolver.Domain.Persistence;
 using TicketSolver.Domain.Persistence.Tables.User;
 using TicketSolver.Domain.Repositories.User.Interfaces;
@@ -23,7 +24,10 @@ public class UsersController(IUsersRepository usersRepository) : ShellController
         if (user == null)
             return NotFound();
 
-        return user;
+        // return user;
+        return Ok( // Status 200, implementado na classe herdada Controller
+            ApiResponse.Ok(user) // Monta objeto default de retorno da Api 
+        );
     }
 
     [HttpPost]

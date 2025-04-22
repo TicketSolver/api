@@ -7,15 +7,15 @@ public class BaseResponse<T>
     public T Data { get; set; } // Qualquer dado que você queira retornar
     public List<string> Errors { get; set; } // Lista de erros, se houver
 
-    public BaseResponse(bool success, string message, T data = default, List<string> errors = null)
+    protected BaseResponse(bool success, string message, T data = default, List<string> errors = null)
     {
         Success = success;
         Message = message;
         Data = data;
-        Errors = errors ?? new List<string>();
+        Errors = errors;
     }
 
-    public static BaseResponse<T> Ok(T data, string message = "Operação realizada com sucesso")
+    public static BaseResponse<T> Ok(T data, string message = "")
     {
         return new BaseResponse<T>(true, message, data);
     }

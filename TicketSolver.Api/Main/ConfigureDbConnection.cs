@@ -1,7 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using TicketSolver.Api.Settings;
 using TicketSolver.Domain.Persistence;
 using TicketSolver.Domain.Settings;
 
