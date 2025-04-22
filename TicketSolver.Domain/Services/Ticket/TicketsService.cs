@@ -56,7 +56,7 @@ public class TicketsService : ITicketsService
     public async Task<bool> UpdateTicketStatusAsync(int id, short status)
     {
         var existing = await _repo.GetByIdAsync(id);
-        if (status < 0 | status > 3)
+        if (status < 0 || status > 3)
             return false;
         if (existing is null)
             return false;
