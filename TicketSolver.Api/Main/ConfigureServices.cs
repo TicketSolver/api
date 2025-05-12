@@ -1,10 +1,11 @@
-using TicketSolver.Domain.Services;
-using TicketSolver.Domain.Services.Interfaces;
-using TicketSolver.Domain.Services.Tenant;
-using TicketSolver.Domain.Services.Tenant.Interfaces;
-using TicketSolver.Domain.Services.Ticket.Interfaces;
-using TicketSolver.Domain.Services.User;
-using TicketSolver.Domain.Services.User.Interfaces;
+using TicketSolver.Application.Services;
+using TicketSolver.Application.Services.Interfaces;
+using TicketSolver.Application.Services.Tenant;
+using TicketSolver.Application.Services.Tenant.Interfaces;
+using TicketSolver.Application.Services.Ticket;
+using TicketSolver.Application.Services.Ticket.Interfaces;
+using TicketSolver.Application.Services.User;
+using TicketSolver.Application.Services.User.Interfaces;
 
 namespace TicketSolver.Api.Main;
 

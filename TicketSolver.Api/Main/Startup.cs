@@ -1,3 +1,4 @@
+using TicketSolver.Api.Middlewares;
 using TicketSolver.Api.Settings.Swagger;
 using TicketSolver.Domain.Extensions;
 
@@ -8,15 +9,17 @@ public static class Startup
     public static WebApplication Configure(WebApplicationBuilder builder)
     {
         builder.Configuration.AddEnvironmentBasedDotEnv();
-        
+    
         ConfigureDbConnection.Setup(builder.Services, builder.Configuration);
         ConfigureIdentity.Setup(builder.Services);
         ConfigureDependencies.Setup(builder.Services);
         ConfigureRepositories.Setup(builder.Services);
         ConfigureServices.Setup(builder.Services);
         SwaggerExtensions.AddSwagger(builder);
-
+        
         var app = builder.Build();
+        app.UseMiddleware<HttpExceptionHandler>();
+
         ConfigureApp.Setup(app, builder.Environment.IsDevelopment());
         SwaggerExtensions.UseSwagger(app, builder);
 

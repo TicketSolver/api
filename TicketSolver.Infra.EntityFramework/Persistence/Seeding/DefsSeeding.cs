@@ -1,0 +1,91 @@
+﻿using Microsoft.EntityFrameworkCore;
+using TicketSolver.Domain.Enums;
+using TicketSolver.Domain.Persistence.Tables.Defs;
+
+namespace TicketSolver.Infra.EntityFramework.Persistence.Seeding;
+
+public static class DefsSeeding
+{
+    public static async Task SeedDefsAsync(EFContext context)
+    {
+        await SeedTicketCategoriesAsync(context);
+        await SeedTicketUserRolesAsync(context);
+        await SeedTicketStatusAsync(context);
+        await SeedTicketPrioritiesAsync(context);
+        await SeedUserTypesAsync(context);
+
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedTicketCategoriesAsync(EFContext context)
+    {
+        if (await context.DefTicketCategories.AnyAsync()) return;
+
+        List<DefTicketCategories> defTicketCategories =
+        [
+            new(eDefTicketCategories.Bug),
+            new(eDefTicketCategories.Error),
+        ];
+
+        await context.DefTicketCategories.AddRangeAsync(defTicketCategories);
+    }
+
+    private static async Task SeedTicketUserRolesAsync(EFContext context)
+    {
+        if (await context.DefTicketUserRoles.AnyAsync()) return;
+
+        List<DefTicketUserRoles> defTicketUserRoles =
+        [
+            new(eDefTicketUserRoles.Requester),
+            new(eDefTicketUserRoles.Responder),
+            new(eDefTicketUserRoles.Observer)
+        ];
+
+        await context.DefTicketUserRoles.AddRangeAsync(defTicketUserRoles);
+    }
+
+    private static async Task SeedTicketStatusAsync(EFContext context)
+    {
+        if (await context.DefTicketStatus.AnyAsync()) return;
+
+        List<DefTicketStatus> defTicketStatus =
+        [
+            new(eDefTicketStatus.New),
+            new(eDefTicketStatus.InProgress),
+            new(eDefTicketStatus.Resolved),
+            new(eDefTicketStatus.Closed),
+            new(eDefTicketStatus.Reopened)
+        ];
+
+        await context.DefTicketStatus.AddRangeAsync(defTicketStatus);
+    }
+
+    private static async Task SeedTicketPrioritiesAsync(EFContext context)
+    {
+        if (await context.DefTicketPriorities.AnyAsync()) return;
+
+        List<DefTicketPriorities> defTicketPriorities =
+        [
+            new(eDefTicketPriorities.Low),
+            new(eDefTicketPriorities.Medium),
+            new(eDefTicketPriorities.High),
+            new(eDefTicketPriorities.Urgent),
+        ];
+
+        await context.DefTicketPriorities.AddRangeAsync(defTicketPriorities);
+    }
+
+    private static async Task SeedUserTypesAsync(EFContext context)
+    {
+        if (await context.DefUserTypes.AnyAsync()) return;
+
+        List<DefUserTypes> defUserTypes =
+        [
+            new(eDefUserTypes.Admin),
+            new(eDefUserTypes.Technician),
+            new(eDefUserTypes.Client),
+        ];
+
+        await context.DefUserTypes.AddRangeAsync(defUserTypes);
+    }
+}

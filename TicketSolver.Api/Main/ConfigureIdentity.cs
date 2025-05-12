@@ -1,9 +1,12 @@
 using System.Text;
-using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using TicketSolver.Domain.Persistence;
+using TicketSolver.Api.Settings;
+using TicketSolver.Application.Configuration;
+using TicketSolver.Domain.Persistence.Tables.User;
+using TicketSolver.Infra.EntityFramework.Persistence;
 
 namespace TicketSolver.Api.Main;
 
@@ -11,13 +14,20 @@ public static class ConfigureIdentity
 {
     public static void Setup(IServiceCollection services)
     {
-        services.AddIdentity<IdentityUser, IdentityRole>()
+        services.AddIdentity<Users, IdentityRole>()
             .AddEntityFrameworkStores<EFContext>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders(); ;
 
         var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")!;
+        var jwtExpiration = Environment.GetEnvironmentVariable("JWT_EXPIRATION")!;
         var secret = Encoding.UTF8.GetBytes(jwtSecret);
 
+        services.AddSingleton<IJwtSettings, JwtSettings>(_ => new JwtSettings
+        {
+            Expiration = int.Parse(jwtExpiration),
+            JwtKey = jwtSecret,
+        });
+        
         services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
