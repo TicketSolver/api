@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using TicketSolver.Domain.Persistence;
 using TicketSolver.Domain.Settings;
+using TicketSolver.Infra.EntityFramework.Persistence;
 
 namespace TicketSolver.Api.Main;
 

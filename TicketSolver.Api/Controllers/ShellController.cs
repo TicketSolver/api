@@ -1,7 +1,9 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TicketSolver.Api.Models.Auth;
+using TicketSolver.Application.Models.Auth;
+using TicketSolver.Domain.Enums;
+using TicketSolver.Domain.Persistence.Tables.Defs;
 
 namespace TicketSolver.Api.Controllers;
 
@@ -10,7 +12,7 @@ namespace TicketSolver.Api.Controllers;
 [Authorize]
 public class ShellController : Controller
 {
-    protected AuthenticatedUserModel AuthenticatedUser
+    protected AuthenticatedUser AuthenticatedUser
     {
         get
         {
@@ -19,13 +21,16 @@ public class ShellController : Controller
                 return new()
                 {
                     Email = User.FindFirst(ClaimTypes.Email)!.Value,
-                    IdentityUserId = User.FindFirst(ClaimTypes.Name)!.Value,
-                    UserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value),
+                    UserId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value,
+                    DefUserType = (eDefUserTypes)short.Parse(User.FindFirst(ClaimTypes.Role)!.Value),
                 };
             }
             catch
             {
-                return new();
+                return new()
+                {
+                    IsAuthenticated = false,
+                };
             }
         }
     }

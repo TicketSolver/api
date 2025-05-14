@@ -1,9 +1,9 @@
 using TicketSolver.Domain.Repositories.Tenant;
-using TicketSolver.Domain.Repositories.Tenant.Interfaces;
 using TicketSolver.Domain.Repositories.Ticket;
-using TicketSolver.Domain.Repositories.Ticket.Interfaces;
 using TicketSolver.Domain.Repositories.User;
-using TicketSolver.Domain.Repositories.User.Interfaces;
+using TicketSolver.Infra.EntityFramework.Repositories.Tenant;
+using TicketSolver.Infra.EntityFramework.Repositories.Ticket;
+using TicketSolver.Infra.EntityFramework.Repositories.User;
 
 namespace TicketSolver.Api.Main;
 
@@ -14,6 +14,5 @@ public static class ConfigureRepositories
         services.AddTransient<IUsersRepository, UsersRepository>();
         services.AddTransient<ITicketsRepository, TicketsRepository>();
         services.AddTransient<ITenantsRepository, TenantsRepository>();
-
     }
 }

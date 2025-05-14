@@ -1,0 +1,43 @@
+﻿using Microsoft.EntityFrameworkCore;
+using TicketSolver.Domain.Persistence.Tables.Tenant;
+using TicketSolver.Domain.Repositories.Tenant;
+using TicketSolver.Infra.EntityFramework.Persistence;
+
+namespace TicketSolver.Infra.EntityFramework.Repositories.Tenant;
+
+public class TenantsRepository(EFContext context) : EFRepositoryBase<Tenants>(context), ITenantsRepository
+{
+    public override IQueryable<Tenants> GetAll()
+    {
+        return base.GetAll().AsNoTracking();
+    }
+
+    public async Task<IEnumerable<Tenants>> ExecuteQueryAsync(IQueryable<Tenants> query, CancellationToken cancellationToken = default)
+    {
+        return await query.ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Tenants>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        return await GetAll().ToListAsync(cancellationToken);
+    }
+    public async Task<Tenants?> GetTenantByKeyAsync(Guid key, CancellationToken cancellationToken)
+    {
+        return await GetAll()
+            .Where(t => t.AdminKey == key || t.PublicKey == key)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<Tenants?> AddTenantAsync(Tenants tenant, CancellationToken cancellationToken)
+    {
+        await Context.Tenants.AddAsync(tenant, cancellationToken);
+        await Context.SaveChangesAsync(cancellationToken);
+        return tenant;
+    }
+    
+    public async Task<bool> IsTenantExistsAsync(Guid key, CancellationToken cancellationToken)
+    {
+        return await GetAll()
+            .AnyAsync(t => t.AdminKey == key || t.PublicKey == key, cancellationToken);
+    }
+}
