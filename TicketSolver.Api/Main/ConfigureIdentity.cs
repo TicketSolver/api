@@ -16,7 +16,7 @@ public static class ConfigureIdentity
     {
         services.AddIdentity<Users, IdentityRole>()
             .AddEntityFrameworkStores<EFContext>()
-            .AddDefaultTokenProviders(); ;
+            .AddDefaultTokenProviders();
 
         var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")!;
         var jwtExpiration = Environment.GetEnvironmentVariable("JWT_EXPIRATION")!;
