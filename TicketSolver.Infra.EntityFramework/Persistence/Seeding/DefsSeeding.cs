@@ -13,6 +13,7 @@ public static class DefsSeeding
         await SeedTicketStatusAsync(context);
         await SeedTicketPrioritiesAsync(context);
         await SeedUserTypesAsync(context);
+        await SeedUserStatusAsync(context);
 
         await context.SaveChangesAsync();
     }
@@ -87,5 +88,20 @@ public static class DefsSeeding
         ];
 
         await context.DefUserTypes.AddRangeAsync(defUserTypes);
+    }
+    
+    private static async Task SeedUserStatusAsync(EFContext context)
+    {
+        if (await context.DefUserTypes.AnyAsync()) return;
+
+        List<DefUserStatus> defUserTypes =
+        [
+            new(eDefUserStatus.Active),
+            new(eDefUserStatus.Inactive),
+            new(eDefUserStatus.Busy),
+            new(eDefUserStatus.Absent),
+        ];
+
+        await context.DefUserStatus.AddRangeAsync(defUserTypes);
     }
 }

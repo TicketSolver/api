@@ -2,7 +2,7 @@
 
 namespace TicketSolver.Api.Exceptions;
 
-public abstract class HttpException : Exception
+public class HttpException : Exception
 {
     public HttpStatusCode HttpStatusCode { get; set; } = HttpStatusCode.InternalServerError;
 

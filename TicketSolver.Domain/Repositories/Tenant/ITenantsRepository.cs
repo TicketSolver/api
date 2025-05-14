@@ -2,7 +2,7 @@
 
 namespace TicketSolver.Domain.Repositories.Tenant;
 
-public interface ITenantsRepository
+public interface ITenantsRepository : IRepositoryBase<Tenants>
 {
     Task<IEnumerable<Tenants>> GetAllAsync(CancellationToken cancellationToken);
     

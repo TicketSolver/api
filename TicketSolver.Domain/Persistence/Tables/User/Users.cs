@@ -12,6 +12,9 @@ public class Users : IdentityUser
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
+    public short DefUserStatusId { get; set; }
+    [ForeignKey("DefUserStatusId")] public DefUserStatus DefUserStatus { get; set; }    
+    
     public short DefUserTypeId { get; set; }
     [ForeignKey("DefUserTypeId")] public DefUserTypes DefUserType { get; set; }
     

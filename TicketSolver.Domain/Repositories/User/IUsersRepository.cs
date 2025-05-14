@@ -9,4 +9,7 @@ public interface IUsersRepository : IRepositoryBase<Users>
     
     IQueryable<Users> GetById(string id);
     Task<Users?> GetByIdAsync(string id, CancellationToken cancellationToken = default);
+    Task<Users> CreateUserAsync(Users user, CancellationToken cancellationToken);
+    
+    Task<Users> UpdateUserAsync(Users user, CancellationToken cancellationToken);
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models.Auth;
+using TicketSolver.Domain.Persistence.Tables.User;
 
 namespace TicketSolver.Application.Services.Interfaces;
 
@@ -14,7 +15,7 @@ public interface IAuthService
     /// <returns></returns>
     /// <exception cref="InvalidPublicKeyException"></exception>
     /// <exception cref="UserNotFoundException"></exception>
-    Task<IdentityResult> RegisterUserAsync(RegisterModel model, CancellationToken cancellationToken);
+    Task<IdentityResult> PreRegisterUserAsync(PreRegisterModel model, CancellationToken cancellationToken);
 
     /// <summary>
     /// Autentica o usuário e retorna o token JWT
@@ -24,4 +25,6 @@ public interface IAuthService
     /// <returns></returns>
     /// <exception cref="AuthenticationFailedException"></exception>
     Task<string> LoginUserAsync(LoginModel model, CancellationToken cancellationToken);
+
+    Task<Users> RegisterUserAsync(RegisterModel model, CancellationToken cancellationToken);
 }
