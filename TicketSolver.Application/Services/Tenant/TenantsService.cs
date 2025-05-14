@@ -8,7 +8,8 @@ public class TenantsService(
     ITenantsRepository tenantsRepository
 ) : ITenantsService
 {
-    public async Task<Tenants?> GetTenantByKeyAsync(Guid key, CancellationToken cancellationToken){
+    public async Task<Tenants?> GetTenantByKeyAsync(Guid key, CancellationToken cancellationToken)
+    {
         return await tenantsRepository.GetTenantByKeyAsync(key, cancellationToken);
     }
 

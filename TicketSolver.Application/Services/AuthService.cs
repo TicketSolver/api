@@ -50,15 +50,6 @@ public class AuthService(
         return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
     }
     
-    /// <summary>
-    /// Verifica se o usuário foi pré-cadastrado pelo Admin e retorna o objeto User
-    /// </summary>
-    /// <param name="key"></param>
-    /// <param name="email"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidPublicKeyException"></exception>
-    /// <exception cref="UserNotFoundException"></exception>
     private async Task<Users> GetRegistrationUser(Guid key, string email,
         CancellationToken cancellationToken)
     {
@@ -68,10 +59,16 @@ public class AuthService(
 
         var preRegisteredUser = await usersRepository
             .GetByEmailAsync(email, cancellationToken);
-        
-        if (preRegisteredUser is null)
-            throw new UserNotFoundException();
 
-        return preRegisteredUser;
+
+        if (preRegisteredUser is not null) return preRegisteredUser;
+        
+        if (tenant.AdminKey == key)
+        {
+            // TODO: Create user
+        }
+            
+        throw new UserNotFoundException();
+
     }
 }
