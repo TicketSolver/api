@@ -4,18 +4,18 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using TicketSolver.Api.Exceptions;
 using TicketSolver.Api.Models;
-using TicketSolver.Api.Models.Auth;
-using TicketSolver.Domain.Exceptions;
-using TicketSolver.Domain.Services.Interfaces;
+using TicketSolver.Application.Exceptions.Users;
+using TicketSolver.Application.Models.Auth;
+using TicketSolver.Application.Services.Interfaces;
+using TicketSolver.Domain.Persistence.Tables.User;
 
 namespace TicketSolver.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController(
-    UserManager<IdentityUser> userManager,
-    SignInManager<IdentityUser> signInManager,
     IAuthService authService,
     IConfiguration configuration
 ) : Controller
@@ -25,70 +25,38 @@ public class AuthController(
     {
         try
         {
-            var user = await authService.GetRegistrationUser(model.Key, model.Email, cancellationToken);
-            var result = await userManager.CreateAsync(user.IdentityUser, model.Password);
+            var result = await authService.RegisterUserAsync(model, cancellationToken);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(ApiResponse.Fail(
-                        "Erro de autenticação",
-                        result.Errors.Select(e => e.Description).ToList()
-                    )
-                );
-            }
+            if (result.Succeeded)
+                return Ok(ApiResponse.Ok(new { }));
 
-            var success = await authService.AttachIdentityUserToUserAsync(
-                user.IdentityUser.Id,
-                user.UserId,
-                cancellationToken
+            return BadRequest(ApiResponse.Fail(
+                    "Erro de autenticação",
+                    result.Errors.Select(e => e.Description).ToList()
+                )
             );
-
-            if (!success)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse.Fail(
-                        "Usuário não encontrado!"
-                    )
-                );
-            }
-
-
-            return Ok(ApiResponse.Ok(new { }));
         }
-        catch (HttpException httpException) // Unauthorized; Forbidden
+        catch (InvalidPublicKeyException)
         {
-            return StatusCode((int)httpException.Status, ApiResponse.Fail(httpException.Message));
+            throw new UnauthorizedException("Chave pública inválida!");
         }
-        catch (Exception e)
+        catch (UserNotFoundException)
         {
-            return BadRequest(new ApiResponse(false, e.Message));
+            throw new ForbiddenException("Chave pública inválida!");
         }
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model, CancellationToken cancellationToken)
     {
-        var identityUser = await userManager.FindByEmailAsync(model.Email);
-        if (identityUser == null || !await userManager.CheckPasswordAsync(identityUser, model.Password))
-            return Unauthorized();
-
-        var userId = await authService.GetUserIdByIdentityUserAsync(identityUser.Id, cancellationToken);
-        if (userId <= 0) return Unauthorized();
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(configuration["JwtKey"]);
-        var tokenDescriptor = new SecurityTokenDescriptor
+        try
         {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Email, identityUser.Email),
-                new Claim(ClaimTypes.Name, identityUser.Id),
-            }),
-            Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha256Signature)
-        };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return Ok(new { token = tokenHandler.WriteToken(token) });
+            var token = await authService.LoginUserAsync(model, cancellationToken);
+            return Ok(ApiResponse.Ok(new { token }));
+        }
+        catch (AuthenticationFailedException e)
+        {
+            throw new UnauthorizedException("Login ou senha inválidos!");
+        }
     }
 }

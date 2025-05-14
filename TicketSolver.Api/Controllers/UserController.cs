@@ -1,75 +1,76 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using TicketSolver.Api.Exceptions;
 using TicketSolver.Api.Models;
-using TicketSolver.Domain.Persistence;
+using TicketSolver.Application.Exceptions.Users;
+using TicketSolver.Application.Services.User.Interfaces;
+using TicketSolver.Domain.Enums;
+using TicketSolver.Domain.Models;
 using TicketSolver.Domain.Persistence.Tables.User;
-using TicketSolver.Domain.Repositories.User.Interfaces;
 
 namespace TicketSolver.Api.Controllers;
 
-// TODO: Verificar ser o usuário que está enviando a requisição tem permissão para editar ou remover tal usuário
-// TODO: Filtrar registros da mesma empresa do usuário. É possível acessar o usuário através de AuthenticatedUser, definido na ShellController
-public class UsersController(IUsersRepository usersRepository) : ShellController
+public class UsersController(IUsersService usersService) : ShellController
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Users>>> GetUsers(CancellationToken cancellationToken)
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<IEnumerable<Users>>> GetUsers(CancellationToken cancellationToken,
+        PaginatedQuery query)
     {
-        return await usersRepository.GetAll().Take(10).ToListAsync(cancellationToken);
+        var users = await usersService.ListUsersAsync(query, cancellationToken);
+        return Ok(ApiResponse.Ok(users));
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Users>> GetUser(int id, CancellationToken cancellationToken)
+    public async Task<ActionResult<Users>> GetUser(string id, CancellationToken cancellationToken)
     {
-        var user = await usersRepository.GetById(cancellationToken, id);
-        if (user == null)
-            return NotFound();
-
-        // return user;
-        return Ok( // Status 200, implementado na classe herdada Controller
-            ApiResponse.Ok(user) // Monta objeto default de retorno da Api 
-        );
+        try
+        {
+            var user = await usersService.GetUserByIdAsync(id, cancellationToken);
+            return Ok(
+                ApiResponse.Ok(user)
+            );
+        }
+        catch (UserNotFoundException)
+        {
+            throw new NotFoundException("Usuário não encontrado");
+        }
     }
 
     [HttpPost]
-    public async Task<ActionResult<Users>> PostUser(Users users, CancellationToken cancellationToken)
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<Users>> PostUser(Users user, CancellationToken cancellationToken)
     {
-        await usersRepository.InsertAsync(cancellationToken, users);
-        return CreatedAtAction(nameof(GetUser), new { id = users.Id }, users);
+        try
+        {
+            await usersService.CreateUserAsync(user, cancellationToken);
+            return Ok(
+                ApiResponse.Ok(user)
+            );
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
-    // TODO: Verificar ser o usuário que está enviando a requisição tem permissão para editar ou remover tal usuário
-    // [HttpPut("{id}")]
-    // public async Task<IActionResult> PutUser(int id, Users users)
-    // {
-    //     if (id != users.Id)
-    //         return BadRequest();
-    //
-    //     context.Entry(users).State = EntityState.Modified;
-    //
-    //     try
-    //     {
-    //         await context.SaveChangesAsync();
-    //     }
-    //     catch (DbUpdateConcurrencyException)
-    //     {
-    //         if (!context.Users.Any(e => e.Id == id))
-    //             return NotFound();
-    //         throw;
-    //     }
-    //
-    //     return NoContent();
-    // }
-    //
-    // [HttpDelete("{id}")]
-    // public async Task<IActionResult> DeleteUser(int id)
-    // {
-    //     var user = await context.Users.FindAsync(id);
-    //     if (user == null)
-    //         return NotFound();
-    //
-    //     context.Users.Remove(user);
-    //     await context.SaveChangesAsync();
-    //
-    //     return NoContent();
-    // }
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> PatchUser(string id, Users body, CancellationToken cancellationToken)
+    {
+        var user = await usersService.UpdateUserAsync(id, body, AuthenticatedUser, cancellationToken);
+        
+        return Ok(ApiResponse.Ok(user));
+    }
+    
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(string id)
+    {
+        if (AuthenticatedUser.UserId != id && AuthenticatedUser.DefUserType != eDefUserTypes.Admin)
+            throw new ForbiddenException("Você não possui permissão para editar este usuário!");
+        
+        // usersService.DeleteUserAsync
+        
+        return Ok(ApiResponse.Ok(new {}));
+    }
 }
