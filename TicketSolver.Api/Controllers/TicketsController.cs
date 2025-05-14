@@ -7,7 +7,7 @@ namespace TicketSolver.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TicketsController(ITicketsService service) : ControllerBase
+public class TicketsController(ITicketsService service) : ShellController
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Tickets>>> GetTickets()

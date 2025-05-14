@@ -12,7 +12,10 @@ public class TenantsController(ITenantsService service) : ControllerBase
     public async Task<IActionResult> GetTenants()
     {   
         var tenants = await service.GetAllAsync(HttpContext.RequestAborted);
-        return Ok(ApiResponse.Ok(tenants));
+        if (tenants.Count() != 0)
+            return Ok(ApiResponse.Ok(tenants));
+        return NotFound(ApiResponse.Fail("Nenhum Tenant Encontrado!"));
+        
     }
 
     [HttpPost]
@@ -27,6 +30,6 @@ public class TenantsController(ITenantsService service) : ControllerBase
     public async Task<IActionResult> GetTenantByKey(Guid key)
     {
         var tenant = await service.GetTenantByKeyAsync(key, HttpContext.RequestAborted);
-        return tenant is not null ? Ok(ApiResponse.Ok(tenant)) : NotFound();
+        return tenant is not null ? Ok(ApiResponse.Ok(tenant)) : NotFound(ApiResponse.Fail("Nenhum Tenant Encontrado!"));
     }
 }
