@@ -1,4 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
@@ -25,16 +26,12 @@ public class AuthController(
     {
         try
         {
-            var result = await authService.RegisterUserAsync(model, cancellationToken);
-
-            if (result.Succeeded)
-                return Ok(ApiResponse.Ok(new { }));
-
-            return BadRequest(ApiResponse.Fail(
-                    "Erro de autenticação",
-                    result.Errors.Select(e => e.Description).ToList()
-                )
-            );
+            var user = await authService.RegisterUserAsync(model, cancellationToken);
+            return Ok(ApiResponse.Ok(new { userId = user.Id }));
+        }
+        catch (UserAlreadyRegisteredException)
+        {
+            throw new BadRequestException("Usuário já registrado!");
         }
         catch (InvalidPublicKeyException)
         {
@@ -44,6 +41,20 @@ public class AuthController(
         {
             throw new ForbiddenException("Chave pública inválida!");
         }
+    }
+
+    [HttpPost("preregister")]
+    public async Task<IActionResult> Register([FromBody] PreRegisterModel model, CancellationToken cancellationToken)
+    {
+        var result = await authService.PreRegisterUserAsync(model, cancellationToken);
+        if (result.Succeeded)
+            return Ok(ApiResponse.Ok(new { }));
+
+        return BadRequest(ApiResponse.Fail(
+                "Erro de autenticação",
+                result.Errors.Select(e => e.Description).ToList()
+            )
+        );
     }
 
     [HttpPost("login")]

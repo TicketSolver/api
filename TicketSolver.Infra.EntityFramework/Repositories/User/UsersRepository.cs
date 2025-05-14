@@ -12,7 +12,8 @@ public class UsersRepository(EFContext context) : EFRepositoryBase<Users>(contex
         return base.GetAll().AsNoTracking();
     }
 
-    public async Task<IEnumerable<Users>> ExecuteQueryAsync(IQueryable<Users> query, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Users>> ExecuteQueryAsync(IQueryable<Users> query,
+        CancellationToken cancellationToken = default)
     {
         return await query.ToListAsync(cancellationToken);
     }
@@ -40,5 +41,21 @@ public class UsersRepository(EFContext context) : EFRepositoryBase<Users>(contex
     {
         return await GetAll()
             .Where(u => u.Id == id).FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<Users> CreateUserAsync(Users user, CancellationToken cancellationToken = default)
+    {
+        await context.Users.AddAsync(user, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
+
+        return user;
+    }
+
+    public async Task<Users> UpdateUserAsync(Users user, CancellationToken cancellationToken = default)
+    {
+        context.Users.Update(user);
+        await context.SaveChangesAsync(cancellationToken);
+        
+        return user;
     }
 }

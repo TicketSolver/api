@@ -7,6 +7,16 @@ namespace TicketSolver.Infra.EntityFramework.Repositories.Tenant;
 
 public class TenantsRepository(EFContext context) : EFRepositoryBase<Tenants>(context), ITenantsRepository
 {
+    public override IQueryable<Tenants> GetAll()
+    {
+        return base.GetAll().AsNoTracking();
+    }
+
+    public async Task<IEnumerable<Tenants>> ExecuteQueryAsync(IQueryable<Tenants> query, CancellationToken cancellationToken = default)
+    {
+        return await query.ToListAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<Tenants>> GetAllAsync(CancellationToken cancellationToken)
     {
         return await GetAll().ToListAsync(cancellationToken);
