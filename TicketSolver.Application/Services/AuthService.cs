@@ -18,7 +18,7 @@ public class AuthService(
     ITenantsRepository tenantsRepository,
     IUsersRepository usersRepository,
     UserManager<Users> userManager,
-    IJwtSettings jwtSettings
+    JwtSettings jwtSettings
 ) : IAuthService
 {
     public async Task<IdentityResult> PreRegisterUserAsync(PreRegisterModel model, CancellationToken cancellationToken)
@@ -26,9 +26,11 @@ public class AuthService(
         var user = new Users
         {
             Email = model.Email,
+            UserName = model.Email,
             FullName = model.FullName,
             DefUserTypeId = model.DefUserTypeId,
             DefUserStatusId = model.DefUserStatusId,
+            TenantId = model.TenantId
         };
 
         return await userManager.CreateAsync(user, model.Password);
@@ -81,13 +83,17 @@ public class AuthService(
         var user = new Users
         {
             Email = model.Email,
+            UserName = model.Email,
             FullName = model.Email,
             DefUserStatusId = (short)eDefUserStatus.Active,
             DefUserTypeId = (short)eDefUserTypes.Admin,
+            TenantId = tenant.Id,
         };
 
-        await userManager.CreateAsync(user, model.Password);
-
+        var result = await userManager.CreateAsync(user, model.Password);
+        if (!result.Succeeded)
+            throw new UserRegistrationException(result.Errors.Select(e => e.Description));
+        
         return user;
     }
 

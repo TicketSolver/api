@@ -7,6 +7,7 @@ using TicketSolver.Api.Settings;
 using TicketSolver.Application.Configuration;
 using TicketSolver.Domain.Persistence.Tables.User;
 using TicketSolver.Infra.EntityFramework.Persistence;
+using JwtSettings = TicketSolver.Application.Configuration.JwtSettings;
 
 namespace TicketSolver.Api.Main;
 
@@ -14,7 +15,14 @@ public static class ConfigureIdentity
 {
     public static void Setup(IServiceCollection services)
     {
-        services.AddIdentity<Users, IdentityRole>()
+        services.AddIdentity<Users, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 6;
+            })
             .AddEntityFrameworkStores<EFContext>()
             .AddDefaultTokenProviders();
 
@@ -22,7 +30,7 @@ public static class ConfigureIdentity
         var jwtExpiration = Environment.GetEnvironmentVariable("JWT_EXPIRATION")!;
         var secret = Encoding.UTF8.GetBytes(jwtSecret);
 
-        services.AddSingleton<IJwtSettings, JwtSettings>(_ => new JwtSettings
+        services.AddSingleton(new JwtSettings
         {
             Expiration = int.Parse(jwtExpiration),
             JwtKey = jwtSecret,

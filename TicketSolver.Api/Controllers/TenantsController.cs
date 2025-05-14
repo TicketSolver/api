@@ -12,7 +12,7 @@ public class TenantsController(ITenantsService service) : ControllerBase
     public async Task<IActionResult> GetTenants()
     {   
         var tenants = await service.GetAllAsync(HttpContext.RequestAborted);
-        return !tenants.Any() ? Ok(ApiResponse.Ok(tenants)) : NotFound();
+        return Ok(ApiResponse.Ok(tenants));
     }
 
     [HttpPost]
