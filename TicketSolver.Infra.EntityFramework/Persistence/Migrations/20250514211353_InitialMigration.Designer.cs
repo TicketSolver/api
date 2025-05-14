@@ -2,19 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using TicketSolver.Domain.Persistence;
 using TicketSolver.Infra.EntityFramework.Persistence;
 
 #nullable disable
 
-namespace TicketSolver.Domain.Migrations
+namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
 {
     [DbContext(typeof(EFContext))]
-    partial class EFContextModelSnapshot : ModelSnapshot
+    [Migration("20250514211353_InitialMigration")]
+    partial class InitialMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,6 +54,11 @@ namespace TicketSolver.Domain.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .HasColumnType("text");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("character varying(13)");
 
                     b.Property<string>("Email")
                         .HasColumnType("text");
@@ -92,6 +99,10 @@ namespace TicketSolver.Domain.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("IdentityUsers");
+
+                    b.HasDiscriminator().HasValue("IdentityUser");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Defs.DefTicketCategories", b =>
@@ -162,6 +173,23 @@ namespace TicketSolver.Domain.Migrations
                     b.ToTable("DefTicketUserRoles");
                 });
 
+            modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Defs.DefUserStatus", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DefUserStatus");
+                });
+
             modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Defs.DefUserTypes", b =>
                 {
                     b.Property<short>("Id")
@@ -187,9 +215,8 @@ namespace TicketSolver.Domain.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AdminKey")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("AdminKey")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -201,9 +228,8 @@ namespace TicketSolver.Domain.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("PublicKey")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("PublicKey")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -303,8 +329,9 @@ namespace TicketSolver.Domain.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -325,8 +352,8 @@ namespace TicketSolver.Domain.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AssignedToId")
-                        .HasColumnType("integer");
+                    b.Property<string>("AssignedToId")
+                        .HasColumnType("text");
 
                     b.Property<short>("Category")
                         .HasColumnType("smallint");
@@ -334,8 +361,9 @@ namespace TicketSolver.Domain.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("CreatedById")
-                        .HasColumnType("integer");
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -355,35 +383,27 @@ namespace TicketSolver.Domain.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AssignedToId");
+
+                    b.HasIndex("CreatedById");
+
                     b.ToTable("Tickets");
                 });
 
             modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.User.Users", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<short>("DefUserStatusId")
+                        .HasColumnType("smallint");
+
                     b.Property<short>("DefUserTypeId")
                         .HasColumnType("smallint");
 
-                    b.Property<int>("EUserType")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("IdentityUserId")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -393,15 +413,13 @@ namespace TicketSolver.Domain.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Id");
+                    b.HasIndex("DefUserStatusId");
 
                     b.HasIndex("DefUserTypeId");
 
-                    b.HasIndex("IdentityUserId");
-
                     b.HasIndex("TenantId");
 
-                    b.ToTable("Users");
+                    b.HasDiscriminator().HasValue("Users");
                 });
 
             modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Ticket.Attachments", b =>
@@ -453,17 +471,34 @@ namespace TicketSolver.Domain.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.User.Users", b =>
+            modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Ticket.Tickets", b =>
                 {
-                    b.HasOne("TicketSolver.Domain.Persistence.Tables.Defs.DefUserTypes", "DefUserType")
+                    b.HasOne("TicketSolver.Domain.Persistence.Tables.User.Users", "AssignedTo")
                         .WithMany()
-                        .HasForeignKey("DefUserTypeId")
+                        .HasForeignKey("AssignedToId");
+
+                    b.HasOne("TicketSolver.Domain.Persistence.Tables.User.Users", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
+                    b.Navigation("AssignedTo");
+
+                    b.Navigation("CreatedBy");
+                });
+
+            modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.User.Users", b =>
+                {
+                    b.HasOne("TicketSolver.Domain.Persistence.Tables.Defs.DefUserStatus", "DefUserStatus")
                         .WithMany()
-                        .HasForeignKey("IdentityUserId")
+                        .HasForeignKey("DefUserStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TicketSolver.Domain.Persistence.Tables.Defs.DefUserTypes", "DefUserType")
+                        .WithMany()
+                        .HasForeignKey("DefUserTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -473,9 +508,9 @@ namespace TicketSolver.Domain.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("DefUserType");
+                    b.Navigation("DefUserStatus");
 
-                    b.Navigation("IdentityUser");
+                    b.Navigation("DefUserType");
 
                     b.Navigation("Tenant");
                 });

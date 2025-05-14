@@ -29,6 +29,12 @@ public class AuthController(
             var user = await authService.RegisterUserAsync(model, cancellationToken);
             return Ok(ApiResponse.Ok(new { userId = user.Id }));
         }
+        catch (UserRegistrationException e)
+        {
+            return BadRequest(
+                ApiResponse.Fail("Não foi possível registrar o usuário", e.Errors.ToList())
+            );
+        }
         catch (UserAlreadyRegisteredException)
         {
             throw new BadRequestException("Usuário já registrado!");

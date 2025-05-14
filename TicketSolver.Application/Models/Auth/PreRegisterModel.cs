@@ -8,6 +8,7 @@ public class PreRegisterModel
     public string FullName { get; set; }
     public string Password { get; set; }
     public short DefUserTypeId { get; set; }
+    public short TenantId { get; set; }
 
     public short DefUserStatusId => (short)(DefUserTypeId == (short)eDefUserTypes.Admin
         ? eDefUserStatus.Active

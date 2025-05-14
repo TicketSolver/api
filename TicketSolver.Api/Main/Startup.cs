@@ -1,6 +1,7 @@
 using TicketSolver.Api.Middlewares;
 using TicketSolver.Api.Settings.Swagger;
 using TicketSolver.Domain.Extensions;
+using TicketSolver.Infra.EntityFramework.Persistence.Seeding;
 
 namespace TicketSolver.Api.Main;
 
@@ -17,12 +18,14 @@ public static class Startup
         ConfigureServices.Setup(builder.Services);
         SwaggerExtensions.AddSwagger(builder);
         
+        builder.Services.AddTransient<SeedingService>();
+        
         var app = builder.Build();
         app.UseMiddleware<HttpExceptionHandler>();
 
         ConfigureApp.Setup(app, builder.Environment.IsDevelopment());
         SwaggerExtensions.UseSwagger(app, builder);
-
+        
         return app;
     }
 }
