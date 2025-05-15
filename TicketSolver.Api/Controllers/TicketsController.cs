@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketSolver.Api.Models;
 using TicketSolver.Application.Services.Ticket.Interfaces;
@@ -8,11 +9,14 @@ namespace TicketSolver.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class TicketsController(ITicketsService service) : ShellController
-{
+{   
+    
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<IEnumerable<Tickets>>> GetTickets()
         => Ok(await service.GetAllAsync());
 
+    
     [HttpGet("{id}")]
     public async Task<ActionResult<Tickets>> GetTicket(int id)
     {
@@ -21,19 +25,23 @@ public class TicketsController(ITicketsService service) : ShellController
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "User")]
     public async Task<ActionResult<Tickets>> PostTicket(Tickets ticket)
     {
         var created = await service.CreateAsync(ticket);
         return CreatedAtAction(nameof(GetTicket),
             new { id = created.Id }, created);
     }
-
+    
     [HttpPut("{id}")]
     public async Task<IActionResult> PutTicket(int id, Tickets ticket)
         => await service.UpdateAsync(id, ticket)
             ? NoContent()
             : NotFound();
-
+    
+    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Technician")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTicket(int id)
         => await service.DeleteAsync(id)
@@ -48,6 +56,9 @@ public class TicketsController(ITicketsService service) : ShellController
             return NotFound();
         return Ok(tickets);
     }
+
+
+
     
     [HttpGet("user/{id}")]
     public async Task<IActionResult> GetAllByUser(string id)

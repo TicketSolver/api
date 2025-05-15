@@ -2,12 +2,14 @@
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using TicketSolver.Application.Configuration;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models.Auth;
 using TicketSolver.Application.Services.Interfaces;
 using TicketSolver.Domain.Enums;
+using TicketSolver.Domain.Persistence.Tables.Tenant;
 using TicketSolver.Domain.Persistence.Tables.User;
 using TicketSolver.Domain.Repositories.Tenant;
 using TicketSolver.Domain.Repositories.User;
@@ -95,6 +97,31 @@ public class AuthService(
             throw new UserRegistrationException(result.Errors.Select(e => e.Description));
         
         return user;
+    }
+
+    public async Task<KeyModel> VerifyKeyAsync(KeyModel key, CancellationToken cancellationToken)
+    {
+        var tenant = await tenantsRepository.GetTenantByKeyAsync(key.TenantKey, cancellationToken);
+        if (tenant is null)
+            throw new KeyNotFoundException();
+        
+        int typeKey = await GetTypeKey(key.TenantKey, cancellationToken);
+    
+        switch (typeKey)
+        {
+            case 0:
+                return new KeyModel(tenant.AdminKey,0);
+            case 1:
+                return new KeyModel(tenant.PublicKey, 1);
+            default:
+                throw new KeyNotFoundException();
+        }
+    }
+
+
+    public Task<int> GetTypeKey(Guid key, CancellationToken cancellationToken)
+    {
+        return tenantsRepository.GetTypeKey(key, cancellationToken);
     }
 
     private async Task<Users> FinishRegistratioAsync(Users user, CancellationToken cancellationToken)

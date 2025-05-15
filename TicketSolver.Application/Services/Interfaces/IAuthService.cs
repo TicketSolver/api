@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models.Auth;
+using TicketSolver.Domain.Persistence.Tables.Tenant;
 using TicketSolver.Domain.Persistence.Tables.User;
 
 namespace TicketSolver.Application.Services.Interfaces;
@@ -27,4 +28,5 @@ public interface IAuthService
     Task<string> LoginUserAsync(LoginModel model, CancellationToken cancellationToken);
 
     Task<Users> RegisterUserAsync(RegisterModel model, CancellationToken cancellationToken);
+    Task<KeyModel> VerifyKeyAsync(KeyModel key, CancellationToken cancellationToken);
 }
