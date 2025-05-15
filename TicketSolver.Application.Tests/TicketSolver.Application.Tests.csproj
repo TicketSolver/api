@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- xUnit e Test SDK alinhados com os outros projetos -->
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+        <PackageReference Include="xunit" Version="2.9.2" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Copia o .env para bin/Debug/net9.0 ao compilar -->
+        <None Include=".env" CopyToOutputDirectory="Always" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Interfaces e implementações que você de fato precisa -->
+        <ProjectReference Include="..\TicketSolver.Api\TicketSolver.Api.csproj" />
+        <ProjectReference Include="..\TicketSolver.Application\TicketSolver.Application.csproj" />
+        <ProjectReference Include="..\TicketSolver.Infra.GeminiAI\TicketSolver.Infra.GeminiAI.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Alinhe estas versões às que o Api já está usando (Core 9.x) -->
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.4" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.4" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.4" />
+
+        <!-- DotNetEnv na mesma versão do Api -->
+        <PackageReference Include="DotNetEnv" Version="3.1.1" />
+    </ItemGroup>
+
+</Project>
