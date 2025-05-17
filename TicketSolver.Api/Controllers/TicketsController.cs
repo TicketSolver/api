@@ -2,17 +2,20 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketSolver.Api.Models;
 using TicketSolver.Application.Services.Ticket.Interfaces;
+using TicketSolver.Domain.Enums;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
+using System.Security.Claims;
+using TicketSolver.Application.Exceptions.Ticket;
+using TicketSolver.Application.Models;
 
 namespace TicketSolver.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
 public class TicketsController(ITicketsService service) : ShellController
 {   
     
     [HttpGet]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "1")]
     public async Task<ActionResult<IEnumerable<Tickets>>> GetTickets()
         => Ok(await service.GetAllAsync());
 
@@ -21,27 +24,42 @@ public class TicketsController(ITicketsService service) : ShellController
     public async Task<ActionResult<Tickets>> GetTicket(int id)
     {
         var t = await service.GetByIdAsync(id);
-        return t is not null ? Ok(t) : NotFound();
+        return t is not null ? 
+            Ok(ApiResponse.Ok(t)) : 
+            NotFound(ApiResponse.Fail("Ticket não encontrado!"));
     }
 
+
     [HttpPost]
-    [Authorize(Roles = "Admin")]
-    [Authorize(Roles = "User")]
-    public async Task<ActionResult<Tickets>> PostTicket(Tickets ticket)
+    [Authorize(Roles = "1,3")]
+    public async Task<ActionResult<Tickets>> PostTicket(TicketDTO ticket)
     {
-        var created = await service.CreateAsync(ticket);
-        return CreatedAtAction(nameof(GetTicket),
-            new { id = created.Id }, created);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            throw new UnauthorizedAccessException("Usuário não autenticado.");
+        }
+        var created = await service.CreateAsync(ticket,userId);
+        return Ok(ApiResponse.Ok(CreatedAtAction(nameof(GetTicket),
+            new { id = created.Id }, created)));
     }
-    
+
+
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutTicket(int id, Tickets ticket)
-        => await service.UpdateAsync(id, ticket)
-            ? NoContent()
-            : NotFound();
-    
-    [Authorize(Roles = "Admin")]
-    [Authorize(Roles = "Technician")]
+    public async Task<IActionResult> PutTicket(int id, TicketDTO ticket)
+    {
+        try
+        {
+            var updateAsync = await service.UpdateAsync(ticket, id);
+            return Ok(ApiResponse.Ok(updateAsync));
+        }
+        catch (TicketException ex)
+        {
+           return NotFound(ApiResponse.Fail(ex.Message));
+        }
+    }
+         
+    [Authorize(Roles = "1,2")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTicket(int id)
         => await service.DeleteAsync(id)

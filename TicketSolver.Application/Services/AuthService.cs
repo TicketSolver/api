@@ -38,16 +38,16 @@ public class AuthService(
         return await userManager.CreateAsync(user, model.Password);
     }
 
-    public async Task<string> LoginUserAsync(LoginModel model, CancellationToken cancellationToken)
+    public async Task<LoginDataReturn> LoginUserAsync(LoginModel model, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(model.Email);
+        var loginDataReturn = new LoginDataReturn();
         if (
             user == null
             || user.DefUserStatusId == (short)eDefUserStatus.Inactive
             || !await userManager.CheckPasswordAsync(user, model.Password)
         )
             throw new AuthenticationFailedException();
-
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(jwtSettings.JwtKey);
         var tokenDescriptor = new SecurityTokenDescriptor()
@@ -55,15 +55,18 @@ public class AuthService(
             Subject = new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Email, user.Email ?? throw new InvalidOperationException()),
                 new Claim(ClaimTypes.Role, user.DefUserTypeId.ToString()),
             }),
             Expires = DateTime.UtcNow.AddHours(jwtSettings.Expiration),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature)
         };
-
-        return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        var writtenToken = tokenHandler.WriteToken(token);
+        loginDataReturn.Token = writtenToken;
+        loginDataReturn.User = new UsersReturn(user);
+        return loginDataReturn;
     }
 
     public async Task<Users> RegisterUserAsync(RegisterModel model,
@@ -75,7 +78,7 @@ public class AuthService(
 
         var preRegisteredUser = await usersRepository
             .GetByEmailAsync(model.Email, cancellationToken);
-
+        
         if (preRegisteredUser is not null)
             return await FinishRegistratioAsync(preRegisteredUser, cancellationToken);
 
@@ -135,3 +138,4 @@ public class AuthService(
         return user;
     }
 }
+

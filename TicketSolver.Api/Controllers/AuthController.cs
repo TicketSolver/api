@@ -56,7 +56,7 @@ public class AuthController(
     {
         var result = await authService.PreRegisterUserAsync(model, cancellationToken);
         if (result.Succeeded)
-            return Ok(ApiResponse.Ok(new { }));
+            return Ok(ApiResponse.Ok(new { result }));
 
         return BadRequest(ApiResponse.Fail(
                 "Erro de autenticação",
@@ -71,24 +71,21 @@ public class AuthController(
         try
         {
             var token = await authService.LoginUserAsync(model, cancellationToken);
-            return Ok(ApiResponse.Ok(new { token }));
+            return Ok(ApiResponse.Ok( token ));
         }
         catch (AuthenticationFailedException e)
         {
-            return Unauthorized(
+            return Unauthorized( 
                 ApiResponse.Fail("Login ou senha inválidos!"));
-
-
         }
         catch (Exception e)
-        { 
+        {
             return BadRequest(
                 ApiResponse.Fail("Erro de autenticação")
             );
-            
         }
     }
-    
+
     [HttpPost("verify")]
     public async Task<IActionResult> VerifyKey([FromBody] KeyModel key, CancellationToken cancellationToken)
     {
@@ -104,7 +101,5 @@ public class AuthController(
         {
             return NotFound(ApiResponse.Fail("Chave inválida!"));
         }
-
     }
-
 }

@@ -32,4 +32,5 @@ using TicketSolver.Api.Models;
            var tenant = await service.GetTenantByKeyAsync(key, HttpContext.RequestAborted);
            return tenant is not null ? Ok(ApiResponse.Ok(tenant)) : NotFound(ApiResponse.Fail("Nenhum Tenant Encontrado!"));
        }
+       
 }

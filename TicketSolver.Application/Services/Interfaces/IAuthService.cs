@@ -25,7 +25,7 @@ public interface IAuthService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="AuthenticationFailedException"></exception>
-    Task<string> LoginUserAsync(LoginModel model, CancellationToken cancellationToken);
+    Task<LoginDataReturn> LoginUserAsync(LoginModel model, CancellationToken cancellationToken);
 
     Task<Users> RegisterUserAsync(RegisterModel model, CancellationToken cancellationToken);
     Task<KeyModel> VerifyKeyAsync(KeyModel key, CancellationToken cancellationToken);
