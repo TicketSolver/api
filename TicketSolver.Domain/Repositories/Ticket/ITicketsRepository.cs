@@ -1,3 +1,4 @@
+using TicketSolver.Application.Models.Ticket;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 
 namespace TicketSolver.Domain.Repositories.Ticket;
@@ -7,7 +8,7 @@ public interface ITicketsRepository
     Task<IEnumerable<Tickets>> GetAllAsync();
     Task<Tickets?> GetByIdAsync(int id);
     Task<Tickets> AddAsync(Tickets ticket);
-    Task UpdateAsync(Tickets ticket);
+    Task<Tickets?> UpdateAsync(Tickets ticket);
     Task DeleteAsync(Tickets ticket);
 
     Task<IEnumerable<Tickets>> GetAllByUserAsync(string id);

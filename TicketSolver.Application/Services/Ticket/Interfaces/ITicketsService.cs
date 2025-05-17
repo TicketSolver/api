@@ -1,13 +1,15 @@
+using TicketSolver.Application.Models;
+using TicketSolver.Application.Models.Ticket;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 
 namespace TicketSolver.Application.Services.Ticket.Interfaces;
 
 public interface ITicketsService
 {
-    Task<IEnumerable<Tickets>> GetAllAsync();
+    Task<IEnumerable<TicketShort>> GetAllAsync();
     Task<Tickets?> GetByIdAsync(int id);
-    Task<Tickets> CreateAsync(Tickets ticket);
-    Task<bool> UpdateAsync(int id, Tickets ticket);
+    Task<Tickets> CreateAsync(TicketDTO ticket, string userId);
+    Task<Tickets> UpdateAsync(TicketDTO ticket, int id);
     Task<bool> DeleteAsync(int id);
     Task<bool> UpdateTicketStatusAsync(int id, short status);
     Task<bool> AssignedTechTicketAsync(int id, string techId);

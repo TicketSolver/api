@@ -1,33 +1,100 @@
+using System.Diagnostics;
+using TicketSolver.Application.Exceptions.Ticket;
+using TicketSolver.Application.Models;
+using TicketSolver.Application.Models.Ticket;
 using TicketSolver.Application.Services.Ticket.Interfaces;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Ticket;
+
 using TicketSolver.Domain.Repositories.User;
 
 namespace TicketSolver.Application.Services.Ticket;
 
 public class TicketsService(ITicketsRepository repo, IUsersRepository usersRepo) : ITicketsService
 {
-    public Task<IEnumerable<Tickets>> GetAllAsync() => repo.GetAllAsync();
+    public async Task<IEnumerable<TicketShort>> GetAllAsync()
+    {
+        var tickets = await repo.GetAllAsync();
+
+        var ticketShorts = tickets.Select(ticket => new TicketShort
+        {
+            Id = ticket.Id,
+            Title = ticket.Title,
+            Description = ticket.Description,
+            Status = ticket.Status,
+            Priority = ticket.Priority,
+            Category = ticket.Category,
+            Created = ticket.CreatedAt,
+            Updated = ticket.UpdatedAt,
+            CreatedBy = ticket.CreatedBy == null ? null : new UserShort
+            {
+                Email = ticket.CreatedBy.Email,
+                FullName = ticket.CreatedBy.FullName,
+                UserTypeId = ticket.CreatedBy.DefUserTypeId,
+                Id = ticket.CreatedBy.Id
+            },
+            AssignedTo = ticket.AssignedTo == null ? null : new UserShort
+            {
+                Email = ticket.AssignedTo.Email,
+                FullName = ticket.AssignedTo.FullName,
+                UserTypeId = ticket.AssignedTo.DefUserTypeId,
+                Id = ticket.AssignedTo.Id
+            }
+        }).ToList();
+
+        return ticketShorts;
+    }
+
 
     public Task<Tickets?> GetByIdAsync(int id) => repo.GetByIdAsync(id);
 
-    public async Task<Tickets> CreateAsync(Tickets ticket)
-    {
-        ticket.CreatedAt = DateTime.UtcNow;
-        return await repo.AddAsync(ticket);
+    public async Task<Tickets> CreateAsync(TicketDTO ticket, string userId)
+    {  
+        Tickets t = new Tickets();
+        t.CreatedById = userId;
+        t.Title = ticket.Title;
+        t.Description = ticket.Description;
+        t.Status = ticket.Status;
+        t.Priority = ticket.Priority;
+        t.Category = ticket.Category;
+        t.CreatedAt = DateTime.UtcNow;
+        t.UpdatedAt = DateTime.UtcNow;
+        return await repo.AddAsync(t);
     }
 
-    public async Task<bool> UpdateAsync(int id, Tickets ticket)
+    public async Task<Tickets> UpdateAsync(TicketDTO ticket, int id)
     {
-        var existing = await repo.GetByIdAsync(id);
-        if (existing is null)
-            return false;
-        existing.Title = ticket.Title;
-        existing.Description = ticket.Description;
-        existing.UpdatedAt = DateTime.UtcNow;
-
-        await repo.UpdateAsync(existing);
-        return true;
+        Tickets updateAsync;
+        try
+        {
+            var newTicket = new Tickets
+            {
+                Title = ticket.Title,
+                Description = ticket.Description,
+                Status = ticket.Status,
+                Priority = ticket.Priority,
+                Category = ticket.Category
+            };
+                var existing = await repo.GetByIdAsync(id);
+                if (existing is null)
+                throw new TicketException("Ticket não encontrado");
+                existing.Title = newTicket.Title;
+                existing.Description = newTicket.Description;
+                existing.Status = newTicket.Status;
+                existing.Priority = newTicket.Priority;
+                existing.Category = newTicket.Category;
+                existing.UpdatedAt = DateTime.UtcNow;
+                updateAsync = await repo.UpdateAsync(existing) ?? new Tickets();
+        }
+        catch (TicketException e)
+        {
+            throw new TicketException("Erro ao criar o ticket");
+        }
+        
+        
+        if (updateAsync is null)
+            throw new TicketException("Erro ao atualizar o ticket");
+        return updateAsync;
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -97,19 +164,19 @@ public class TicketsService(ITicketsRepository repo, IUsersRepository usersRepo)
         if (countAll == 0)
         {
             return """
-                total: 0,
-                 inProgress: 0,
-                 waiting: 0,
-                 resolved: 0 
-                """;
+                   total: 0,
+                    inProgress: 0,
+                    waiting: 0,
+                    resolved: 0 
+                   """;
         }
         else
             return $"""
-                total: {countAll},
-                 inProgress: {coutnInProgress},
-                 waiting: {countWaiting},
-                 resolved: {countResolved} 
-                """;
+                    total: {countAll},
+                     inProgress: {coutnInProgress},
+                     waiting: {countWaiting},
+                     resolved: {countResolved} 
+                    """;
     }
 
     public async Task<IEnumerable<Tickets>> GetLatestUserAsync(string id)

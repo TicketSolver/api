@@ -28,6 +28,16 @@ public class TenantsRepository(EFContext context) : EFRepositoryBase<Tenants>(co
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public Task<int> GetTypeKey(Guid key, CancellationToken cancellationToken)
+    {
+        return Context.Tenants
+            .Where(t => t.AdminKey == key || t.PublicKey == key)
+            .Select(t => t.AdminKey == key ? 0 : 1)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+
+
     public async Task<Tenants?> AddTenantAsync(Tenants tenant, CancellationToken cancellationToken)
     {
         await Context.Tenants.AddAsync(tenant, cancellationToken);

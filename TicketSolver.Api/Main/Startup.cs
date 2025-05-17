@@ -19,10 +19,19 @@ public static class Startup
         SwaggerExtensions.AddSwagger(builder);
         
         builder.Services.AddTransient<SeedingService>();
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend",
+                builder => builder
+                    .WithOrigins("http://localhost:3000")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
+        });
+        
         
         var app = builder.Build();
         app.UseMiddleware<HttpExceptionHandler>();
-
+        app.UseCors("AllowFrontend");
         ConfigureApp.Setup(app, builder.Environment.IsDevelopment());
         SwaggerExtensions.UseSwagger(app, builder);
         
