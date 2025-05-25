@@ -100,4 +100,10 @@ public class TicketsRepository(EfContext context) : ITicketsRepository
       .OrderByDescending(t => t.CreatedAt).Take(5)
       .ToListAsync();
   }
+
+  public Task<bool> ExistsAsync(int requestTicketId, CancellationToken cancellationToken)
+  {
+    return context.Tickets
+      .AnyAsync(t => t.Id == requestTicketId, cancellationToken);
+  }
 }

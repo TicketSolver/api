@@ -20,4 +20,5 @@ public interface ITicketsRepository
 
      Task<IEnumerable<Tickets>> GetLatestUserAsync(string id);
      Task<IEnumerable<Tickets>> GetLatestTechAsync(string id);
+     Task<bool> ExistsAsync(int requestTicketId, CancellationToken cancellationToken);
 }

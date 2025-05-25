@@ -1,27 +1,33 @@
 using Microsoft.EntityFrameworkCore;
-using TicketSolver.Application.Models.Chat;
+using TicketSolver.Domain.Models.Chat;
 using TicketSolver.Domain.Persistence.Tables.Chat;
-using TicketSolver.Domain.Repositories;
 using TicketSolver.Domain.Repositories.Chat;
 using TicketSolver.Infra.EntityFramework.Persistence;
-using ChatMessageDto = TicketSolver.Domain.Persistence.Tables.Chat.ChatMessageDto;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.Chat;
 
-public class ChatRepository(EfContext context) : IRepositoryBase<IChatRepository>
+public class ChatRepository(EfContext context) : EFRepositoryBase<TicketChat>(context), IChatRepository
 {
-        private readonly EfContext _context;
-        
-        public async Task<TicketChat?> GetChatByTicketIdAsync(int ticketId)
-        {
-            return await _context.Chats
-                .AsNoTracking()
-                .FirstOrDefaultAsync(tc => tc.TicketId == ticketId);
-        }
+    public async Task<IEnumerable<TicketChat>> ExecuteQueryAsync(IQueryable<TicketChat> query, CancellationToken cancellationToken = default)
+    {
+        return await query.ToListAsync(cancellationToken);
+    }
 
-        public async Task<TicketChat> CreateChatAsync(int ticketId)
+    public async Task<TicketChat?> GetChatByTicketIdAsync(int ticketId, CancellationToken cancellationToken = default)
+    {
+        return await DbSet
+            .Include(c => c.Ticket)
+            .FirstOrDefaultAsync(c => c.TicketId == ticketId, cancellationToken);
+    }
+
+    public async Task<TicketChat> AddMessageToChatAsync(int ticketId, Message message, CancellationToken cancellationToken = default)
+    {
+        var chat = await GetChatByTicketIdAsync(ticketId, cancellationToken);
+        
+        if (chat == null)
         {
-            var chat = new TicketChat
+            // Criar novo chat se não existir
+            chat = new TicketChat
             {
                 TicketId = ticketId,
                 ChatHistory = "[]",
@@ -29,137 +35,180 @@ public class ChatRepository(EfContext context) : IRepositoryBase<IChatRepository
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-
-            _context.Chats.Add(chat);
-            await _context.SaveChangesAsync();
             
-            return chat;
+            await DbSet.AddAsync(chat, cancellationToken);
+            await Context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<TicketChat> AddMessageToChatAsync(int ticketId, ChatMessageDto message)
-        {
-            // ✅ Buscar ou criar chat
-            var chat = await _context.Chats
-                .FirstOrDefaultAsync(tc => tc.TicketId == ticketId);
+        // Adicionar nova mensagem
+        var messages = chat.Messages;
+        messages.Add(message);
+        chat.Messages = messages;
+        chat.TotalMessages = messages.Count;
+        chat.LastMessageAt = message.Timestamp;
+        chat.UpdatedAt = DateTime.UtcNow;
 
-            if (chat == null)
-            {
-                chat = await CreateChatAsync(ticketId);
-            }
+        DbSet.Update(chat);
+        await Context.SaveChangesAsync(cancellationToken);
 
-            // ✅ Adicionar mensagem à lista
-            var messages = chat.Messages;
-            messages.Add(message);
-            chat.Messages = messages;
+        return chat;
+    }
 
-            // ✅ Atualizar contadores
-            chat.TotalMessages = messages.Count;
-            chat.LastMessageAt = message.Timestamp;
-            chat.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-            
-            return chat;
-        }
-
-        public async Task<TicketChat> MarkMessagesAsReadAsync(int ticketId, int currentUserId)
-        {
-            var chat = await _context.Chats
-                .FirstOrDefaultAsync(tc => tc.TicketId == ticketId);
-
-            if (chat != null)
-            {
-                // ✅ Marcar mensagens como lidas
-                var messages = chat.Messages;
-                foreach (var msg in messages.Where(m => m.SenderId != currentUserId && !m.IsRead))
-                {
-                    msg.IsRead = true;
-                }
-                
-                chat.Messages = messages;
-                chat.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-            }
-
-            return chat ?? throw new ArgumentException("Chat não encontrado");
-        }
-
-        public async Task<int> GetUnreadCountAsync(int ticketId, int currentUserId)
-        {
-            var chat = await GetChatByTicketIdAsync(ticketId);
-            
-            if (chat == null) return 0;
-
-            return chat.Messages
-                .Count(m => m.SenderId != currentUserId && !m.IsRead);
-        }
+    public async Task<TicketChat> UpdateChatHistoryAsync(int ticketId, List<Message> messages, CancellationToken cancellationToken = default)
+    {
+        var chat = await GetChatByTicketIdAsync(ticketId, cancellationToken);
         
-        public async Task<TicketPermissionDto> GetTicketPermissionAsync(int ticketId, string currentUserId)
+        if (chat == null)
         {
-            var ticket = await _context.Tickets
-                .AsNoTracking()
-                .Select(t => new { t.Id, t.CreatedById, t.AssignedToId, t.Status })
-                .FirstOrDefaultAsync(t => t.Id == ticketId);
+            throw new InvalidOperationException($"Chat not found for TicketId: {ticketId}");
+        }
 
-            if (ticket == null)
+        chat.Messages = messages;
+        chat.TotalMessages = messages.Count;
+        chat.LastMessageAt = messages.LastOrDefault()?.Timestamp;
+        chat.UpdatedAt = DateTime.UtcNow;
+
+        DbSet.Update(chat);
+        await Context.SaveChangesAsync(cancellationToken);
+
+        return chat;
+    }
+
+    public async Task<IEnumerable<TicketChat>> GetChatsWithUnreadMessagesAsync(string userId, string userType, CancellationToken cancellationToken = default)
+    {
+        var chats = await DbSet
+            .Include(c => c.Ticket)
+            .Where(c => c.ChatHistory != "[]" && c.ChatHistory != null)
+            .ToListAsync(cancellationToken);
+
+        // Filtrar chats que têm mensagens não lidas para o usuário específico
+        var chatsWithUnread = chats.Where(chat =>
+        {
+            var messages = chat.Messages;
+            return messages.Any(m => !m.IsRead && 
+                                   m.SenderId != userId && 
+                                   m.SenderType != userType);
+        }).ToList();
+
+        return chatsWithUnread;
+    }
+
+    public async Task<IEnumerable<TicketChat>> GetRecentChatsAsync(int limit = 10, CancellationToken cancellationToken = default)
+    {
+        return await DbSet
+            .Include(c => c.Ticket)
+            .Where(c => c.LastMessageAt.HasValue)
+            .OrderByDescending(c => c.LastMessageAt)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task MarkMessagesAsReadAsync(int ticketId, string userId, string userType, CancellationToken cancellationToken = default)
+    {
+        var chat = await GetChatByTicketIdAsync(ticketId, cancellationToken);
+        
+        if (chat == null) return;
+
+        var messages = chat.Messages;
+        var hasChanges = false;
+
+        foreach (var message in messages.Where(m => !m.IsRead && 
+                                                   m.SenderId != userId && 
+                                                   m.SenderType != userType))
+        {
+            message.IsRead = true;
+            hasChanges = true;
+        }
+
+        if (hasChanges)
+        {
+            chat.Messages = messages;
+            chat.UpdatedAt = DateTime.UtcNow;
+            
+            DbSet.Update(chat);
+            await Context.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public async Task<IEnumerable<TicketChat>> GetChatsByDateRangeAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default)
+    {
+        return await DbSet
+            .Include(c => c.Ticket)
+            .Where(c => c.CreatedAt >= startDate && c.CreatedAt <= endDate)
+            .OrderByDescending(c => c.LastMessageAt ?? c.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<bool> ChatExistsForTicketAsync(int ticketId, CancellationToken cancellationToken = default)
+    {
+        return await DbSet
+            .AnyAsync(c => c.TicketId == ticketId, cancellationToken);
+    }
+
+    public async Task<IEnumerable<TicketChat>> GetChatsBySenderTypeAsync(string senderType, CancellationToken cancellationToken = default)
+    {
+        var chats = await DbSet
+            .Include(c => c.Ticket)
+            .Where(c => c.ChatHistory != "[]" && c.ChatHistory != null)
+            .ToListAsync(cancellationToken);
+
+        // Filtrar chats que contêm mensagens do tipo de remetente especificado
+        var filteredChats = chats.Where(chat =>
+        {
+            var messages = chat.Messages;
+            return messages.Any(m => m.SenderType.Equals(senderType, StringComparison.OrdinalIgnoreCase));
+        }).ToList();
+
+        return filteredChats;
+    }
+
+    public async Task<ChatStatistics> GetChatStatisticsAsync(int ticketId, CancellationToken cancellationToken = default)
+    {
+        var chat = await GetChatByTicketIdAsync(ticketId, cancellationToken);
+        
+        if (chat == null)
+        {
+            return new ChatStatistics
             {
-                return new TicketPermissionDto
-                {
-                    Exists = false,
-                    HasPermission = false,
-                    TicketStatus = null
-                };
-            }
-
-            // ✅ Usuario é dono do ticket OU é o técnico atribuído
-            var hasPermission = ticket.CreatedById == currentUserId || 
-                               ticket.AssignedToId == currentUserId;
-
-            return new TicketPermissionDto
-            {
-                Exists = true,
-                HasPermission = hasPermission,
-                TicketStatus = ticket.Status.ToString(),
-                IsOwner = ticket.CreatedById == currentUserId,
-                IsTechnician = ticket.AssignedToId == currentUserId
+                TotalMessages = 0,
+                UnreadMessages = 0,
+                LastMessageAt = null,
+                CreatedAt = DateTime.UtcNow,
+                LastSenderType = string.Empty,
+                LastSenderName = string.Empty
             };
         }
-        
-        public async Task<string> GetUserNameAsync(string userId)
+
+        var messages = chat.Messages;
+        var lastMessage = messages.LastOrDefault();
+        var unreadCount = messages.Count(m => !m.IsRead);
+
+        return new ChatStatistics
         {
-            var user = await _context.Users
-                .AsNoTracking()
-                .Where(u => u.Id == userId)
-                .Select(u => new { u.FullName, u.Email })
-                .FirstOrDefaultAsync();
+            TotalMessages = chat.TotalMessages,
+            UnreadMessages = unreadCount,
+            LastMessageAt = chat.LastMessageAt,
+            CreatedAt = chat.CreatedAt,
+            LastSenderType = lastMessage?.SenderType ?? string.Empty,
+            LastSenderName = lastMessage?.SenderName ?? string.Empty
+        };
+    }
 
-            if (user == null)
-                return $"Usuário #{userId}";
-
-            var fullName = $"{user.FullName}".Trim();
-            return (string.IsNullOrEmpty(fullName) ? user.Email : fullName) ?? string.Empty;
-        }
-        
-        public async Task UpdateTicketLastActivityAsync(int ticketId)
-        {
-            var ticket = await _context.Tickets
-                .FirstOrDefaultAsync(t => t.Id == ticketId);
-
-            if (ticket != null)
+    public async Task<TicketChat> UpdateAsync(TicketChat chat, CancellationToken cancellationToken = default)
+    {
+            var existingChat = await GetChatByTicketIdAsync(chat.TicketId, cancellationToken);
+            if (existingChat == null)
             {
-                ticket.UpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
+                throw new InvalidOperationException($"Chat não encontrado no ticket: {chat.TicketId}");
             }
-        }
+            existingChat.ChatHistory = chat.ChatHistory;
+            existingChat.TotalMessages = chat.TotalMessages;
+            existingChat.LastMessageAt = chat.LastMessageAt;
+            existingChat.IsArchived = chat.IsArchived;
+            existingChat.UpdatedAt = DateTime.UtcNow;
+            DbSet.Update(existingChat);
+            await Context.SaveChangesAsync(cancellationToken);
+            return existingChat;
+    }
 
-        public IQueryable<IChatRepository> GetAll()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<IChatRepository>> ExecuteQueryAsync(IQueryable<IChatRepository> query, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
 }
