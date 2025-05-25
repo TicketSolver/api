@@ -11,7 +11,7 @@ using TicketSolver.Infra.EntityFramework.Persistence;
 
 namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
 {
-    [DbContext(typeof(EFContext))]
+    [DbContext(typeof(EfContext))]
     [Migration("20250514211353_InitialMigration")]
     partial class InitialMigration
     {

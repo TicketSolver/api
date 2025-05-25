@@ -5,7 +5,7 @@ using TicketSolver.Infra.EntityFramework.Persistence;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.Tenant;
 
-public class TenantsRepository(EFContext context) : EFRepositoryBase<Tenants>(context), ITenantsRepository
+public class TenantsRepository(EfContext context) : EFRepositoryBase<Tenants>(context), ITenantsRepository
 {
     public override IQueryable<Tenants> GetAll()
     {
@@ -27,6 +27,16 @@ public class TenantsRepository(EFContext context) : EFRepositoryBase<Tenants>(co
             .Where(t => t.AdminKey == key || t.PublicKey == key)
             .FirstOrDefaultAsync(cancellationToken);
     }
+
+    public Task<int> GetTypeKey(Guid key, CancellationToken cancellationToken)
+    {
+        return Context.Tenants
+            .Where(t => t.AdminKey == key || t.PublicKey == key)
+            .Select(t => t.AdminKey == key ? 0 : 1)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+
 
     public async Task<Tenants?> AddTenantAsync(Tenants tenant, CancellationToken cancellationToken)
     {
