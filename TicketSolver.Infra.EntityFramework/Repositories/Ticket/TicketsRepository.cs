@@ -6,7 +6,7 @@ using TicketSolver.Infra.EntityFramework.Persistence;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.Ticket;
 
-public class TicketsRepository(EFContext context) : ITicketsRepository
+public class TicketsRepository(EfContext context) : ITicketsRepository
 {
   public async Task<IEnumerable<Tickets>> GetAllAsync()
     => await context.Tickets
@@ -52,7 +52,7 @@ public class TicketsRepository(EFContext context) : ITicketsRepository
   public async Task<IEnumerable<Tickets>> GetAllByUserAsync(string id)
   {
     return await context.Tickets
-      .Include(t => t.CreatedById)
+      .Include(t => t.CreatedBy)
       .Where(t => t.CreatedById == id)
       .ToListAsync();
   }
@@ -99,5 +99,11 @@ public class TicketsRepository(EFContext context) : ITicketsRepository
       .Where(t => t.AssignedToId == id)
       .OrderByDescending(t => t.CreatedAt).Take(5)
       .ToListAsync();
+  }
+
+  public Task<bool> ExistsAsync(int requestTicketId, CancellationToken cancellationToken)
+  {
+    return context.Tickets
+      .AnyAsync(t => t.Id == requestTicketId, cancellationToken);
   }
 }

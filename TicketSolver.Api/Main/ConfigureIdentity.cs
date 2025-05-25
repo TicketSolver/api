@@ -23,7 +23,7 @@ public static class ConfigureIdentity
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequiredLength = 6;
             })
-            .AddEntityFrameworkStores<EFContext>()
+            .AddEntityFrameworkStores<EfContext>()
             .AddDefaultTokenProviders();
 
         var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")!;
