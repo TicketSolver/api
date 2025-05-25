@@ -1,4 +1,6 @@
 using TicketSolver.Application.Services;
+using TicketSolver.Application.Services.Chat;
+using TicketSolver.Application.Services.Chat.Interfaces;
 using TicketSolver.Application.Services.Interfaces;
 using TicketSolver.Application.Services.Tenant;
 using TicketSolver.Application.Services.Tenant.Interfaces;
@@ -18,5 +20,6 @@ public static class ConfigureServices
         services.AddTransient<ITenantsService, TenantsService>();
         services.AddTransient<ITicketsService, TicketsService>();
         services.AddTransient<IAttachmentsService, AttachmentsService>();
+        services.AddTransient<IChatService, ChatService>();
     }
 }

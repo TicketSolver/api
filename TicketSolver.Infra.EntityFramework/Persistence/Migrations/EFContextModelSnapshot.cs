@@ -10,7 +10,7 @@ using TicketSolver.Infra.EntityFramework.Persistence;
 
 namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
 {
-    [DbContext(typeof(EFContext))]
+    [DbContext(typeof(EfContext))]
     partial class EFContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

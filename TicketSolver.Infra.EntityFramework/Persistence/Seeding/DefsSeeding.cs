@@ -6,7 +6,7 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Seeding;
 
 public static class DefsSeeding
 {
-    public static async Task SeedDefsAsync(EFContext context)
+    public static async Task SeedDefsAsync(EfContext context)
     {
         await SeedTicketCategoriesAsync(context);
         await SeedStorageProvidersAsync(context);
@@ -19,7 +19,7 @@ public static class DefsSeeding
         await context.SaveChangesAsync();
     }
 
-    private static async Task SeedStorageProvidersAsync(EFContext context)
+    private static async Task SeedStorageProvidersAsync(EfContext context)
     {
         if (await context.DefStorageProviders.AnyAsync()) return;
 
@@ -31,8 +31,8 @@ public static class DefsSeeding
 
         await context.DefStorageProviders.AddRangeAsync(defTicketCategories);
     }
-
-    private static async Task SeedTicketCategoriesAsync(EFContext context)
+    
+    private static async Task SeedTicketCategoriesAsync(EfContext context)
     {
         if (await context.DefTicketCategories.AnyAsync()) return;
 
@@ -45,7 +45,7 @@ public static class DefsSeeding
         await context.DefTicketCategories.AddRangeAsync(defTicketCategories);
     }
 
-    private static async Task SeedTicketUserRolesAsync(EFContext context)
+    private static async Task SeedTicketUserRolesAsync(EfContext context)
     {
         if (await context.DefTicketUserRoles.AnyAsync()) return;
 
@@ -59,7 +59,7 @@ public static class DefsSeeding
         await context.DefTicketUserRoles.AddRangeAsync(defTicketUserRoles);
     }
 
-    private static async Task SeedTicketStatusAsync(EFContext context)
+    private static async Task SeedTicketStatusAsync(EfContext context)
     {
         if (await context.DefTicketStatus.AnyAsync()) return;
 
@@ -75,7 +75,7 @@ public static class DefsSeeding
         await context.DefTicketStatus.AddRangeAsync(defTicketStatus);
     }
 
-    private static async Task SeedTicketPrioritiesAsync(EFContext context)
+    private static async Task SeedTicketPrioritiesAsync(EfContext context)
     {
         if (await context.DefTicketPriorities.AnyAsync()) return;
 
@@ -90,7 +90,7 @@ public static class DefsSeeding
         await context.DefTicketPriorities.AddRangeAsync(defTicketPriorities);
     }
 
-    private static async Task SeedUserTypesAsync(EFContext context)
+    private static async Task SeedUserTypesAsync(EfContext context)
     {
         if (await context.DefUserTypes.AnyAsync()) return;
 
@@ -104,7 +104,7 @@ public static class DefsSeeding
         await context.DefUserTypes.AddRangeAsync(defUserTypes);
     }
     
-    private static async Task SeedUserStatusAsync(EFContext context)
+    private static async Task SeedUserStatusAsync(EfContext context)
     {
         if (await context.DefUserTypes.AnyAsync()) return;
 
