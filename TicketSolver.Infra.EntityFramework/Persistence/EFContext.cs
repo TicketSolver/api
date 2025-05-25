@@ -34,4 +34,5 @@ public class EFContext(DbContextOptions<EFContext> options) : DbContext(options)
     public DbSet<DefTicketStatus> DefTicketStatus { get; set; }
     public DbSet<DefUserTypes> DefUserTypes { get; set; }
     public DbSet<DefUserStatus> DefUserStatus { get; set; }
+    public DbSet<DefStorageProviders> DefStorageProviders { get; set; }
 }

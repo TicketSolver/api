@@ -9,6 +9,7 @@ public static class DefsSeeding
     public static async Task SeedDefsAsync(EFContext context)
     {
         await SeedTicketCategoriesAsync(context);
+        await SeedStorageProvidersAsync(context);
         await SeedTicketUserRolesAsync(context);
         await SeedTicketStatusAsync(context);
         await SeedTicketPrioritiesAsync(context);
@@ -16,6 +17,19 @@ public static class DefsSeeding
         await SeedUserStatusAsync(context);
 
         await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedStorageProvidersAsync(EFContext context)
+    {
+        if (await context.DefStorageProviders.AnyAsync()) return;
+
+        List<DefStorageProviders> defTicketCategories =
+        [
+            new(eDefStorageProviders.Aws),
+            new(eDefStorageProviders.Azure),
+        ];
+
+        await context.DefStorageProviders.AddRangeAsync(defTicketCategories);
     }
 
     private static async Task SeedTicketCategoriesAsync(EFContext context)

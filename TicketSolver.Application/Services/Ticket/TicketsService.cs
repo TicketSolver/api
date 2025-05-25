@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using TicketSolver.Application.Exceptions.Ticket;
 using TicketSolver.Application.Models;
-using TicketSolver.Application.Models.Ticket;
 using TicketSolver.Application.Services.Ticket.Interfaces;
+using TicketSolver.Domain.Models.Ticket;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Ticket;
 

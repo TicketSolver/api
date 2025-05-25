@@ -2,6 +2,8 @@ using TicketSolver.Api.Middlewares;
 using TicketSolver.Api.Settings.Swagger;
 using TicketSolver.Domain.Extensions;
 using TicketSolver.Infra.EntityFramework.Persistence.Seeding;
+using TicketSolver.Infra.Storage.Extensions;
+using TicketSolver.Infra.Storage.Settings.Storage;
 
 namespace TicketSolver.Api.Main;
 
@@ -17,6 +19,9 @@ public static class Startup
         ConfigureRepositories.Setup(builder.Services);
         ConfigureServices.Setup(builder.Services);
         SwaggerExtensions.AddSwagger(builder);
+
+        builder.Services.Configure<StorageSettings>(builder.Configuration.GetSection("Storage"));
+        builder.Services.ConfigureStorage(builder.Configuration);
         
         builder.Services.AddTransient<SeedingService>();
         builder.Services.AddCors(options =>

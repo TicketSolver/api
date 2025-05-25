@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Infra.EntityFr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Application", "TicketSolver.Application\TicketSolver.Application.csproj", "{1A4A7ECF-91CD-48C0-8A45-1ED104B04C94}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Infra.Storage", "TicketSolver.Infra.Storage\TicketSolver.Infra.Storage.csproj", "{30ACCCFA-D42E-4488-ABD9-196DEBD749E7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{1A4A7ECF-91CD-48C0-8A45-1ED104B04C94}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A4A7ECF-91CD-48C0-8A45-1ED104B04C94}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A4A7ECF-91CD-48C0-8A45-1ED104B04C94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30ACCCFA-D42E-4488-ABD9-196DEBD749E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30ACCCFA-D42E-4488-ABD9-196DEBD749E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30ACCCFA-D42E-4488-ABD9-196DEBD749E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30ACCCFA-D42E-4488-ABD9-196DEBD749E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4D548103-6E72-4ED7-8D40-CFC374822D18} = {7BE768EC-6A32-448B-83F7-A33A7DFAB238}

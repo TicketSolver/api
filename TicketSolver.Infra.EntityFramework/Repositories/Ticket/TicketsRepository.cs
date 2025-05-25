@@ -1,12 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using TicketSolver.Application.Models.Ticket;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Ticket;
 using TicketSolver.Infra.EntityFramework.Persistence;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.Ticket;
 
-public class TicketsRepository(EFContext context) : ITicketsRepository
+public class TicketsRepository(EFContext context) : EFRepositoryBase<Tickets>(context), ITicketsRepository
 {
   public async Task<IEnumerable<Tickets>> GetAllAsync()
     => await context.Tickets

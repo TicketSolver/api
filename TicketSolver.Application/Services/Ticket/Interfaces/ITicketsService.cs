@@ -1,5 +1,5 @@
 using TicketSolver.Application.Models;
-using TicketSolver.Application.Models.Ticket;
+using TicketSolver.Domain.Models.Ticket;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 
 namespace TicketSolver.Application.Services.Ticket.Interfaces;

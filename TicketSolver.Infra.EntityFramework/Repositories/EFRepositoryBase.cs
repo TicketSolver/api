@@ -22,8 +22,14 @@ public abstract class EFRepositoryBase<TEntity> : IEFRepositoryBase<TEntity> whe
     {
         return DbSet.AsQueryable();
     }
+    
+    public async Task<IEnumerable<TEntity>> ExecuteQueryAsync(IQueryable<TEntity> query,
+        CancellationToken cancellationToken = default)
+    {
+        return await query.ToListAsync(cancellationToken);
+    }
 
-    private IQueryable<TEntity> GetQueryableById(int id)
+    private IQueryable<TEntity> GetQueryableById<TId>(TId id)
     {
         var parameter = Expression.Parameter(typeof(TEntity), "x");
         var property = Expression.Property(parameter, "Id");
@@ -33,7 +39,7 @@ public abstract class EFRepositoryBase<TEntity> : IEFRepositoryBase<TEntity> whe
         return DbSet.Where(lambda).AsQueryable();
     }
 
-    public IQueryable<TEntity> GetById(int id)
+    public IQueryable<TEntity> GetById<TId>(TId id)
     {
         return GetQueryableById(id);
     }

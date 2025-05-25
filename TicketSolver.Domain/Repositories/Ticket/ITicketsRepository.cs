@@ -1,9 +1,8 @@
-using TicketSolver.Application.Models.Ticket;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 
 namespace TicketSolver.Domain.Repositories.Ticket;
 
-public interface ITicketsRepository
+public interface ITicketsRepository : IRepositoryBase<Tickets>
 {
     Task<IEnumerable<Tickets>> GetAllAsync();
     Task<Tickets?> GetByIdAsync(int id);
