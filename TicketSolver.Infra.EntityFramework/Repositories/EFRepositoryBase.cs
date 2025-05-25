@@ -9,10 +9,10 @@ namespace TicketSolver.Infra.EntityFramework.Repositories;
 
 public abstract class EFRepositoryBase<TEntity> : IEFRepositoryBase<TEntity> where TEntity : class
 {
-    protected readonly EFContext Context;
+    protected readonly EfContext Context;
     protected readonly DbSet<TEntity> DbSet;
 
-    protected EFRepositoryBase(EFContext context)
+    protected EFRepositoryBase(EfContext context)
     {
         Context = context;
         DbSet = Context.Set<TEntity>();

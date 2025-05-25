@@ -6,7 +6,7 @@ using TicketSolver.Domain.Persistence.Tables.Tenant;
 
 namespace TicketSolver.Infra.EntityFramework.Persistence.Seeding;
 
-public class SeedingService(EFContext context, RoleManager<IdentityRole> roleManager)
+public class SeedingService(EfContext context, RoleManager<IdentityRole> roleManager)
 {
     public async Task SeedAsync()
     {

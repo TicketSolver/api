@@ -5,7 +5,7 @@ using TicketSolver.Infra.EntityFramework.Persistence;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.Tenant;
 
-public class TenantsRepository(EFContext context) : EFRepositoryBase<Tenants>(context), ITenantsRepository
+public class TenantsRepository(EfContext context) : EFRepositoryBase<Tenants>(context), ITenantsRepository
 {
     public override IQueryable<Tenants> GetAll()
     {
