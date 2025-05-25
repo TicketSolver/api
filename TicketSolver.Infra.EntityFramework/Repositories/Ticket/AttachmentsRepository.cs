@@ -4,7 +4,7 @@ using TicketSolver.Infra.EntityFramework.Persistence;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.Ticket;
 
-public class AttachmentsRepository(EFContext context) : EFRepositoryBase<Attachments>(context), IAttachmentsRepository
+public class AttachmentsRepository(EfContext context) : EFRepositoryBase<Attachments>(context), IAttachmentsRepository
 {
     
 }
