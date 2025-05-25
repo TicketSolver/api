@@ -10,13 +10,11 @@ public class TicketsRepository(EfContext context) : EFRepositoryBase<Tickets>(co
   public async Task<IEnumerable<Tickets>> GetAllAsync()
     => await context.Tickets
       .Include(t => t.CreatedBy)
-      .Include(t => t.AssignedTo)
       .ToListAsync();
 
   public async Task<Tickets?> GetByIdAsync(int id)
     => await context.Tickets
       .Include(t => t.CreatedBy)
-      .Include(t => t.AssignedTo)
       .Include(t => t.Attachments)
       .Include(t => t.TicketUpdates)
       .Include(t => t.TicketUsers)
@@ -36,7 +34,6 @@ public class TicketsRepository(EfContext context) : EFRepositoryBase<Tickets>(co
     await context.SaveChangesAsync();
     var updatedTicket = await context.Tickets
       .Include(t => t.CreatedBy)
-      .Include(t => t.AssignedTo)
       .FirstOrDefaultAsync(t => t.Id == ticket.Id);
     return updatedTicket;
   }
@@ -59,8 +56,7 @@ public class TicketsRepository(EfContext context) : EFRepositoryBase<Tickets>(co
   public async Task<IEnumerable<Tickets>> GetAllByTechAsync(string id)
   {
     return  await context.Tickets
-      .Include(t => t.AssignedToId)
-      .Where(t => t.AssignedToId == id)
+      .Where(t => t.TicketUsers.Any(tu => tu.UserId == id))
       .ToListAsync();
   }
 
@@ -94,8 +90,7 @@ public class TicketsRepository(EfContext context) : EFRepositoryBase<Tickets>(co
   public async Task<IEnumerable<Tickets>> GetLatestTechAsync(string id)
   {
     return await context.Tickets
-      .Include(t => t.AssignedToId)
-      .Where(t => t.AssignedToId == id)
+      .Where(t => t.TicketUsers.Any(tu => tu.UserId == id))
       .OrderByDescending(t => t.CreatedAt).Take(5)
       .ToListAsync();
   }

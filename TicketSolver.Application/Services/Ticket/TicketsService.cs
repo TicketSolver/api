@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using TicketSolver.Application.Exceptions.Ticket;
+using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models;
 using TicketSolver.Application.Services.Ticket.Interfaces;
 using TicketSolver.Domain.Models.Ticket;
@@ -10,7 +12,11 @@ using TicketSolver.Domain.Repositories.User;
 
 namespace TicketSolver.Application.Services.Ticket;
 
-public class TicketsService(ITicketsRepository repo, IUsersRepository usersRepo) : ITicketsService
+public class TicketsService(
+    ITicketsRepository repo,
+    IUsersRepository usersRepo,
+    ITicketUsersRepository ticketUsersRepository
+) : ITicketsService
 {
     public async Task<IEnumerable<TicketShort>> GetAllAsync()
     {
@@ -33,13 +39,6 @@ public class TicketsService(ITicketsRepository repo, IUsersRepository usersRepo)
                 UserTypeId = ticket.CreatedBy.DefUserTypeId,
                 Id = ticket.CreatedBy.Id
             },
-            AssignedTo = ticket.AssignedTo == null ? null : new UserShort
-            {
-                Email = ticket.AssignedTo.Email,
-                FullName = ticket.AssignedTo.FullName,
-                UserTypeId = ticket.AssignedTo.DefUserTypeId,
-                Id = ticket.AssignedTo.Id
-            }
         }).ToList();
 
         return ticketShorts;
@@ -120,16 +119,23 @@ public class TicketsService(ITicketsRepository repo, IUsersRepository usersRepo)
         return true;
     }
 
-    public async Task<bool> AssignedTechTicketAsync(int id, string techId)
+    public async Task<bool> AssignedTechTicketAsync(CancellationToken cancellationToken, int ticketId, string techId)
     {
-        var existing = await repo.GetByIdAsync(id);
-        var existingTech = usersRepo.GetById(techId);
-        if ((existing is null) || (existingTech.FirstOrDefault() is null))
-            return false;
-        existing.AssignedToId = techId;
-        existing.UpdatedAt = DateTime.UtcNow;
-        await repo.UpdateAsync(existing);
-        return true;
+        var ticketExists = await repo.GetById(ticketId).AnyAsync(cancellationToken);
+        if (!ticketExists)
+            throw new TicketNotFoundException();
+        
+        var technicianExists = await usersRepo.GetById(techId).AnyAsync(cancellationToken);
+        if (!technicianExists)
+            throw new UserNotFoundException();
+
+        var ticketUser = new TicketUsers()
+        {
+            UserId = techId,
+            TicketId = ticketId
+        };
+
+        return await ticketUsersRepository.InsertAsync(cancellationToken, ticketUser);
     }
 
     public async Task<IEnumerable<Tickets>> GetAllByUserAsync(string id)

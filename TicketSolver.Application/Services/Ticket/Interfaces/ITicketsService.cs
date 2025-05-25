@@ -12,7 +12,7 @@ public interface ITicketsService
     Task<Tickets> UpdateAsync(TicketDTO ticket, int id);
     Task<bool> DeleteAsync(int id);
     Task<bool> UpdateTicketStatusAsync(int id, short status);
-    Task<bool> AssignedTechTicketAsync(int id, string techId);
+    Task<bool> AssignedTechTicketAsync(CancellationToken cancellationToken, int ticketId, string techId);
     Task<IEnumerable<Tickets>> GetAllByUserAsync(string id);
     Task<IEnumerable<Tickets>> GetAllByTechAsync(string id);
     Task<string> GetCountsasync(string id);

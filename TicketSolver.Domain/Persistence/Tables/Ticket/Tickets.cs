@@ -16,11 +16,9 @@ public class Tickets : EntityDates
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public string CreatedById { get; set; }
-    public string? AssignedToId { get; set; }
 
     [ForeignKey("CreatedById")] public Users CreatedBy { get; set; }
-    [ForeignKey("AssignedToId")] public Users AssignedTo { get; set; }
-
+    
     public ICollection<TicketUpdates> TicketUpdates { get; set; } = [];
     public ICollection<TicketUsers> TicketUsers { get; set; } = [];
     public ICollection<Attachments> Attachments { get; set; } = [];

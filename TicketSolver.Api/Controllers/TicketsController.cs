@@ -73,14 +73,9 @@ public class TicketsController(ITicketsService service) : ShellController
     [HttpGet("technician/")]
     public async Task<ActionResult<IEnumerable<Tickets>>> GetAllByTech()
     {
-        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (id is null)
-        {
-            return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
-        }
         try
         {
-            var tickets = await service.GetAllByTechAsync(id);
+            var tickets = await service.GetAllByTechAsync(AuthenticatedUser.UserId);
             if (tickets is not null)
                 return Ok(ApiResponse.Ok(tickets));
             return NotFound(ApiResponse.Ok(new {},"Nenhum ticket encontrado"));
@@ -158,7 +153,7 @@ public class TicketsController(ITicketsService service) : ShellController
     }
     
      [HttpPut("{id:int}/assign/")]
-        public async Task<IActionResult> AssignTicketToTech(int id)
+        public async Task<IActionResult> AssignTicketToTech(int id, CancellationToken cancellationToken)
         {
             var  techId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (techId is null)
@@ -168,7 +163,7 @@ public class TicketsController(ITicketsService service) : ShellController
 
             try
             {
-                var ok = await service.AssignedTechTicketAsync(id, techId);
+                var ok = await service.AssignedTechTicketAsync(cancellationToken, id, techId);
                 if (!ok)
                     return BadRequest(ApiResponse.Fail("Ticket ou técnico não encontrado (IDs inválidos)."));
                 return Ok(ApiResponse.Ok("","Ticket atribuído com sucesso!"));

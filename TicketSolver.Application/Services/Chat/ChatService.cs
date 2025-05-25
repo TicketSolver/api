@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TicketSolver.Application.Models.Chat;
 using TicketSolver.Application.Services.Chat.Interfaces;
@@ -9,22 +10,13 @@ using TicketSolver.Domain.Repositories.Ticket;
 
 namespace TicketSolver.Application.Services.Chat;
 
-public class ChatService : IChatService
+public class ChatService(
+    IChatRepository chatRepository,
+    ITicketsRepository ticketRepository,
+    ILogger<ChatService> logger,
+    ITicketUsersRepository ticketUsersRepository)
+    : IChatService
 {
-    private readonly IChatRepository _chatRepository;
-    private readonly ITicketsRepository _ticketRepository;
-    private readonly ILogger<ChatService> _logger;
-
-    public ChatService(
-        IChatRepository chatRepository,
-        ITicketsRepository ticketRepository,
-        ILogger<ChatService> logger)
-    {
-        _chatRepository = chatRepository;
-        _ticketRepository = ticketRepository;
-        _logger = logger;
-    }
-
     public async Task<ChatMessageResponseDto> SendMessageAsync(SendMessageRequestDto request, CancellationToken cancellationToken = default)
     {
         try
@@ -33,7 +25,7 @@ public class ChatService : IChatService
             if (string.IsNullOrWhiteSpace(request.Text))
                 throw new ArgumentException("Mensagem não pode estar vazia");
 
-            if (!await _ticketRepository.ExistsAsync(request.TicketId, cancellationToken))
+            if (!await ticketRepository.ExistsAsync(request.TicketId, cancellationToken))
                 throw new ArgumentException("Ticket não encontrado");
 
             // Criar mensagem
@@ -51,9 +43,9 @@ public class ChatService : IChatService
             };
 
             // Adicionar mensagem ao chat
-            var updatedChat = await _chatRepository.AddMessageToChatAsync(request.TicketId, message, cancellationToken);
+            var updatedChat = await chatRepository.AddMessageToChatAsync(request.TicketId, message, cancellationToken);
 
-            _logger.LogInformation("Mensagem enviada para o ticket {TicketId} por {SenderName}", request.TicketId, request.SenderName);
+            logger.LogInformation("Mensagem enviada para o ticket {TicketId} por {SenderName}", request.TicketId, request.SenderName);
 
             return new ChatMessageResponseDto
             {
@@ -71,7 +63,7 @@ public class ChatService : IChatService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar mensagem para o ticket {TicketId}", request.TicketId);
+            logger.LogError(ex, "Erro ao enviar mensagem para o ticket {TicketId}", request.TicketId);
             throw;
         }
     }
@@ -85,7 +77,7 @@ public class ChatService : IChatService
     {
         try
         {
-            var chat = await _chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
+            var chat = await chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
             
             if (chat == null)
             {
@@ -122,7 +114,7 @@ public class ChatService : IChatService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter histórico do chat do ticket {TicketId}", ticketId);
+            logger.LogError(ex, "Erro ao obter histórico do chat do ticket {TicketId}", ticketId);
             throw;
         }
     }
@@ -131,12 +123,12 @@ public class ChatService : IChatService
     {
         try
         {
-            await _chatRepository.MarkMessagesAsReadAsync(request.TicketId, request.UserId, request.UserType, cancellationToken);
-            _logger.LogInformation("Mensagens marcadas como lidas para o usuário {UserId} no ticket {TicketId}", request.UserId, request.TicketId);
+            await chatRepository.MarkMessagesAsReadAsync(request.TicketId, request.UserId, request.UserType, cancellationToken);
+            logger.LogInformation("Mensagens marcadas como lidas para o usuário {UserId} no ticket {TicketId}", request.UserId, request.TicketId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao marcar mensagens como lidas para o usuário {UserId} no ticket {TicketId}", request.UserId, request.TicketId);
+            logger.LogError(ex, "Erro ao marcar mensagens como lidas para o usuário {UserId} no ticket {TicketId}", request.UserId, request.TicketId);
             throw;
         }
     }
@@ -145,7 +137,7 @@ public class ChatService : IChatService
     {
         try
         {
-            var chats = await _chatRepository.GetChatsWithUnreadMessagesAsync(userId, userType, cancellationToken);
+            var chats = await chatRepository.GetChatsWithUnreadMessagesAsync(userId, userType, cancellationToken);
             
             return chats.Select(chat => new ChatSummaryDto
             {
@@ -161,7 +153,7 @@ public class ChatService : IChatService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter chats com mensagens não lidas para o usuário {UserId}", userId);
+            logger.LogError(ex, "Erro ao obter chats com mensagens não lidas para o usuário {UserId}", userId);
             throw;
         }
     }
@@ -170,7 +162,7 @@ public class ChatService : IChatService
     {
         try
         {
-            var chats = await _chatRepository.GetRecentChatsAsync(limit, cancellationToken);
+            var chats = await chatRepository.GetRecentChatsAsync(limit, cancellationToken);
             
             return chats.Select(chat => new ChatSummaryDto
             {
@@ -186,7 +178,7 @@ public class ChatService : IChatService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter chats recentes");
+            logger.LogError(ex, "Erro ao obter chats recentes");
             throw;
         }
     }
@@ -195,8 +187,8 @@ public class ChatService : IChatService
     {
         try
         {
-            var statistics = await _chatRepository.GetChatStatisticsAsync(ticketId, cancellationToken);
-            var chat = await _chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
+            var statistics = await chatRepository.GetChatStatisticsAsync(ticketId, cancellationToken);
+            var chat = await chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
         
             // Calcular estatísticas adicionais se o chat existir
             var totalParticipants = 0;
@@ -234,7 +226,7 @@ public class ChatService : IChatService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter estatísticas do chat do ticket {TicketId}", ticketId);
+            logger.LogError(ex, "Erro ao obter estatísticas do chat do ticket {TicketId}", ticketId);
             throw;
         }
     }
@@ -243,14 +235,14 @@ public class ChatService : IChatService
     {
         try
         {
-            if (!await _ticketRepository.ExistsAsync(ticketId, cancellationToken))
+            if (!await ticketRepository.ExistsAsync(ticketId, cancellationToken))
                 throw new ArgumentException("Ticket não encontrado");
 
-            var existingChat = await _chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
+            var existingChat = await chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
         
             if (existingChat == null)
             {
-                _logger.LogInformation("Chat será criado quando a primeira mensagem for enviada para o ticket {TicketId}", ticketId);
+                logger.LogInformation("Chat será criado quando a primeira mensagem for enviada para o ticket {TicketId}", ticketId);
             
                 return new ChatResponseDto
                 {
@@ -271,7 +263,7 @@ public class ChatService : IChatService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao iniciar chat para o ticket {TicketId}", ticketId);
+            logger.LogError(ex, "Erro ao iniciar chat para o ticket {TicketId}", ticketId);
             throw;
         }
     }
@@ -283,8 +275,12 @@ public class ChatService : IChatService
             // Implementar lógica de permissão baseada no seu domínio
             // Por exemplo: verificar se o usuário é dono do ticket, técnico responsável, etc.
             
-            var ticket = await _ticketRepository.GetByIdAsync(ticketId);
-            if (ticket == null) return false;
+            var ticketCreatedById = await ticketRepository
+                .GetById(ticketId)
+                .Select(t => t.CreatedById)
+                .FirstOrDefaultAsync(cancellationToken);
+            
+            if (ticketCreatedById == null) return false;
 
             // Admins e técnicos podem acessar qualquer chat
             if (userType.Equals("Admin", StringComparison.OrdinalIgnoreCase) || 
@@ -293,14 +289,14 @@ public class ChatService : IChatService
 
             // Usuários só podem acessar seus próprios tickets
             if (userType.Equals("User", StringComparison.OrdinalIgnoreCase))
-                return ticket.CreatedById.ToString() == userId ||
-                       ticket.AssignedToId.ToString() == userId;;
+                return ticketCreatedById == userId ||
+                       await ticketUsersRepository.IsUserAssignedToTicketAsync(cancellationToken, userId, ticketId);
 
             return false;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao verificar permissão de acesso ao chat do ticket {TicketId} para o usuário {UserId}", ticketId, userId);
+            logger.LogError(ex, "Erro ao verificar permissão de acesso ao chat do ticket {TicketId} para o usuário {UserId}", ticketId, userId);
             return false;
         }
     }
@@ -312,7 +308,7 @@ public class ChatService : IChatService
             // Esta implementação depende de você adicionar um método de busca no repository
             // Por enquanto, vou simular uma busca básica
             
-            var chat = await _chatRepository.GetChatByTicketIdAsync(request.TicketId ?? 0, cancellationToken);
+            var chat = await chatRepository.GetChatByTicketIdAsync(request.TicketId ?? 0, cancellationToken);
             if (chat == null) return [];
 
             var messages = chat.Messages.AsQueryable();
@@ -344,7 +340,7 @@ public class ChatService : IChatService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar mensagens");
+            logger.LogError(ex, "Erro ao buscar mensagens");
             throw;
         }
     }
@@ -353,14 +349,14 @@ public class ChatService : IChatService
     {
         try
         {
-            var chat = await _chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
+            var chat = await chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
             if (chat == null) return 0;
 
             return chat.Messages.Count(m => !m.IsRead && m.SenderId.ToString() != userId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter contagem de mensagens não lidas para o ticket {TicketId}", ticketId);
+            logger.LogError(ex, "Erro ao obter contagem de mensagens não lidas para o ticket {TicketId}", ticketId);
             throw;
         }
     }
@@ -369,7 +365,7 @@ public class ChatService : IChatService
     {
         try
         {
-            var chat = await _chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
+            var chat = await chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
             if (chat == null) return [];
 
             var participants = chat.Messages
@@ -388,7 +384,7 @@ public class ChatService : IChatService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter participantes do chat do ticket {TicketId}", ticketId);
+            logger.LogError(ex, "Erro ao obter participantes do chat do ticket {TicketId}", ticketId);
             throw;
         }
     }
@@ -410,9 +406,9 @@ public class ChatService : IChatService
                 IsRead = false
             };
 
-            var updatedChat = await _chatRepository.AddMessageToChatAsync(request.TicketId, message, cancellationToken);
+            var updatedChat = await chatRepository.AddMessageToChatAsync(request.TicketId, message, cancellationToken);
 
-            _logger.LogInformation("Mensagem do sistema enviada para o ticket {TicketId}", request.TicketId);
+            logger.LogInformation("Mensagem do sistema enviada para o ticket {TicketId}", request.TicketId);
 
             return new ChatMessageResponseDto
             {
@@ -430,7 +426,7 @@ public class ChatService : IChatService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar mensagem do sistema para o ticket {TicketId}", request.TicketId);
+            logger.LogError(ex, "Erro ao enviar mensagem do sistema para o ticket {TicketId}", request.TicketId);
             throw;
         }
     }
@@ -439,7 +435,7 @@ public class ChatService : IChatService
     {
         try
         {
-            var chats = await _chatRepository.GetChatsByDateRangeAsync(startDate, endDate, cancellationToken);
+            var chats = await chatRepository.GetChatsByDateRangeAsync(startDate, endDate, cancellationToken);
 
             var totalChats = chats.Count();
             var totalMessages = chats.Sum(c => c.Messages.Count);
@@ -470,7 +466,7 @@ public class ChatService : IChatService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter resumo de atividade do chat");
+            logger.LogError(ex, "Erro ao obter resumo de atividade do chat");
             throw;
         }
     }
@@ -479,18 +475,18 @@ public class ChatService : IChatService
     {
         try
         {
-            var chat = await _chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
+            var chat = await chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
             if (chat == null)
                 throw new ArgumentException("Chat não encontrado");
 
             chat.IsArchived = isArchived;
-            await _chatRepository.UpdateAsync(chat, cancellationToken);
+            await chatRepository.UpdateAsync(chat, cancellationToken);
 
-            _logger.LogInformation("Chat do ticket {TicketId} {Action}", ticketId, isArchived ? "arquivado" : "desarquivado");
+            logger.LogInformation("Chat do ticket {TicketId} {Action}", ticketId, isArchived ? "arquivado" : "desarquivado");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao {Action} chat do ticket {TicketId}", isArchived ? "arquivar" : "desarquivar", ticketId);
+            logger.LogError(ex, "Erro ao {Action} chat do ticket {TicketId}", isArchived ? "arquivar" : "desarquivar", ticketId);
             throw;
         }
     }
@@ -499,7 +495,7 @@ public class ChatService : IChatService
     {
         try
         {
-            var chat = await _chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
+            var chat = await chatRepository.GetChatByTicketIdAsync(ticketId, cancellationToken);
             if (chat == null)
             {
                 return new ChatInfoDto
@@ -526,7 +522,7 @@ public class ChatService : IChatService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter informações do chat do ticket {TicketId}", ticketId);
+            logger.LogError(ex, "Erro ao obter informações do chat do ticket {TicketId}", ticketId);
             throw;
         }
     }
