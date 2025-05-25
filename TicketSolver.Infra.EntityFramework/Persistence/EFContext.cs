@@ -69,6 +69,7 @@ public class EfContext(DbContextOptions<EfContext> options) : DbContext(options)
     public DbSet<DefUserTypes> DefUserTypes { get; set; }
     public DbSet<DefUserStatus> DefUserStatus { get; set; }
     public DbSet<DefStorageProviders> DefStorageProviders { get; set; }
+    public DbSet<DefUserSatisfaction> DefUserSatisfaction { get; set; }
     
     public override int SaveChanges()
     {

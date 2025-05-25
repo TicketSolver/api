@@ -9,6 +9,7 @@ public static class DefsSeeding
     public static async Task SeedDefsAsync(EfContext context)
     {
         await SeedTicketCategoriesAsync(context);
+        await SeedUserSatisfactionAsync(context);
         await SeedStorageProvidersAsync(context);
         await SeedTicketUserRolesAsync(context);
         await SeedTicketStatusAsync(context);
@@ -32,14 +33,32 @@ public static class DefsSeeding
         await context.DefStorageProviders.AddRangeAsync(defTicketCategories);
     }
     
+    private static async Task SeedUserSatisfactionAsync(EfContext context)
+    {
+        if (await context.DefUserSatisfaction.AnyAsync()) return;
+
+        List<DefUserSatisfaction> defUserSatisfactions =
+        [
+            new(eDefUserSatisfaction.VeryBad),
+            new(eDefUserSatisfaction.Bad),
+            new(eDefUserSatisfaction.Neutral),
+            new(eDefUserSatisfaction.Good),
+            new(eDefUserSatisfaction.Excellent),
+        ];
+
+        await context.DefUserSatisfaction.AddRangeAsync(defUserSatisfactions);
+    }
+    
     private static async Task SeedTicketCategoriesAsync(EfContext context)
     {
-        if (await context.DefTicketCategories.AnyAsync()) return;
+        // if (await context.DefTicketCategories.AnyAsync()) return;
 
         List<DefTicketCategories> defTicketCategories =
         [
-            new(eDefTicketCategories.Bug),
-            new(eDefTicketCategories.Error),
+            new(eDefTicketCategories.Hardware),
+            new(eDefTicketCategories.Software),
+            new(eDefTicketCategories.Network),
+            new(eDefTicketCategories.Access),
         ];
 
         await context.DefTicketCategories.AddRangeAsync(defTicketCategories);

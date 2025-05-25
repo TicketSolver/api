@@ -4,10 +4,12 @@ using TicketSolver.Application.Exceptions.Ticket;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models;
 using TicketSolver.Application.Services.Ticket.Interfaces;
+using TicketSolver.Domain.Enums;
+using TicketSolver.Domain.Models;
 using TicketSolver.Domain.Models.Ticket;
+using TicketSolver.Domain.Models.Users;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Ticket;
-
 using TicketSolver.Domain.Repositories.User;
 
 namespace TicketSolver.Application.Services.Ticket;
@@ -28,17 +30,19 @@ public class TicketsService(
             Title = ticket.Title,
             Description = ticket.Description,
             Status = ticket.Status,
-            Priority = ticket.Priority,
-            Category = ticket.Category,
+            Priority = ticket.DefTicketPriorityId,
+            Category = ticket.DefTicketCategoryId,
             Created = ticket.CreatedAt,
             Updated = ticket.UpdatedAt,
-            CreatedBy = ticket.CreatedBy == null ? null : new UserShort
-            {
-                Email = ticket.CreatedBy.Email,
-                FullName = ticket.CreatedBy.FullName,
-                UserTypeId = ticket.CreatedBy.DefUserTypeId,
-                Id = ticket.CreatedBy.Id
-            },
+            CreatedBy = ticket.CreatedBy == null
+                ? null
+                : new UserShort
+                {
+                    Email = ticket.CreatedBy.Email,
+                    FullName = ticket.CreatedBy.FullName,
+                    UserTypeId = ticket.CreatedBy.DefUserTypeId,
+                    Id = ticket.CreatedBy.Id
+                },
         }).ToList();
 
         return ticketShorts;
@@ -48,14 +52,14 @@ public class TicketsService(
     public Task<Tickets?> GetByIdAsync(int id) => repo.GetByIdAsync(id);
 
     public async Task<Tickets> CreateAsync(TicketDTO ticket, string userId)
-    {  
+    {
         Tickets t = new Tickets();
         t.CreatedById = userId;
         t.Title = ticket.Title;
         t.Description = ticket.Description;
         t.Status = ticket.Status;
-        t.Priority = ticket.Priority;
-        t.Category = ticket.Category;
+        t.DefTicketPriorityId = ticket.Priority;
+        t.DefTicketCategoryId = ticket.Category;
         t.CreatedAt = DateTime.UtcNow;
         t.UpdatedAt = DateTime.UtcNow;
         return await repo.AddAsync(t);
@@ -71,26 +75,26 @@ public class TicketsService(
                 Title = ticket.Title,
                 Description = ticket.Description,
                 Status = ticket.Status,
-                Priority = ticket.Priority,
-                Category = ticket.Category
+                DefTicketPriorityId = ticket.Priority,
+                DefTicketCategoryId = ticket.Category
             };
-                var existing = await repo.GetByIdAsync(id);
-                if (existing is null)
+            var existing = await repo.GetByIdAsync(id);
+            if (existing is null)
                 throw new TicketException("Ticket não encontrado");
-                existing.Title = newTicket.Title;
-                existing.Description = newTicket.Description;
-                existing.Status = newTicket.Status;
-                existing.Priority = newTicket.Priority;
-                existing.Category = newTicket.Category;
-                existing.UpdatedAt = DateTime.UtcNow;
-                updateAsync = await repo.UpdateAsync(existing) ?? new Tickets();
+            existing.Title = newTicket.Title;
+            existing.Description = newTicket.Description;
+            existing.Status = newTicket.Status;
+            existing.DefTicketPriorityId = newTicket.DefTicketPriorityId;
+            existing.DefTicketCategoryId = newTicket.DefTicketCategoryId;
+            existing.UpdatedAt = DateTime.UtcNow;
+            updateAsync = await repo.UpdateAsync(existing) ?? new Tickets();
         }
         catch (TicketException e)
         {
             throw new TicketException("Erro ao criar o ticket");
         }
-        
-        
+
+
         if (updateAsync is null)
             throw new TicketException("Erro ao atualizar o ticket");
         return updateAsync;
@@ -124,7 +128,7 @@ public class TicketsService(
         var ticketExists = await repo.GetById(ticketId).AnyAsync(cancellationToken);
         if (!ticketExists)
             throw new TicketNotFoundException();
-        
+
         var technicianExists = await usersRepo.GetById(techId).AnyAsync(cancellationToken);
         if (!technicianExists)
             throw new UserNotFoundException();
@@ -138,24 +142,68 @@ public class TicketsService(
         return await ticketUsersRepository.InsertAsync(cancellationToken, ticketUser);
     }
 
-    public async Task<IEnumerable<Tickets>> GetAllByUserAsync(string id)
+    public async Task<IEnumerable<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId,
+        PaginatedQuery paginatedQuery)
     {
-        var existing = usersRepo.GetById(id);
+        var existing = usersRepo.GetById(userId);
         IEnumerable<Tickets> tickets = new List<Tickets>();
         if (existing.FirstOrDefault() is null)
             return tickets;
-        tickets = await repo.GetAllByUserAsync(id);
+        tickets = await repo.GetAllByUserAsync(cancellationToken, userId, paginatedQuery);
         return tickets;
     }
 
-    public async Task<IEnumerable<Tickets>> GetAllByTechAsync(string id)
+    public async Task<IEnumerable<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string id,
+        PaginatedQuery paginatedQuery)
     {
-        var existing = usersRepo.GetById(id);
-        IEnumerable<Tickets> tickets = new List<Tickets>();
-        if (existing.FirstOrDefault() is null)
-            return tickets;
-        tickets = await repo.GetAllByTechAsync(id);
-        return tickets;
+        var userExists = await usersRepo.GetById(id).AnyAsync(cancellationToken);
+        if (!userExists)
+            throw new UserNotFoundException();
+
+        return await repo.GetAllByTechAsync(cancellationToken, id, paginatedQuery);
+    }
+
+    public async Task<TechnicianPerformance> GetTechPerformanceAsync(CancellationToken cancellationToken, string techId)
+    {
+        var query = ticketUsersRepository.GetAll()
+            .AsNoTracking()
+            .Where(tu => tu.UserId == techId);
+
+        var techHasTicket = await query.AnyAsync(cancellationToken);
+
+        var totalTickets = techHasTicket
+            ? await query
+                .Select(tu => tu.TicketId)
+                .Distinct()
+                .CountAsync(cancellationToken)
+            : 0;
+
+        var resolvedTickets = techHasTicket
+            ? await query
+                .Where(tu => tu.UserId == techId)
+                .Select(tu => tu.Ticket)
+                .Where(t => t.Status == (short)eDefTicketStatus.Closed)
+                .CountAsync(cancellationToken)
+            : 0;
+
+        var satisfaction = techHasTicket
+            ? await query
+                .AverageAsync(f => f.Ticket.DefUserSatisfactionId / 5.0 * 100, cancellationToken)
+            : 0;
+
+        var responseTime = await query
+            .Where(tu => tu.FirstResponseAt != null)
+            .Select(tu => new { tu.FirstResponseAt, tu.CreatedAt })
+            .ToListAsync(cancellationToken);
+
+        var performance = new TechnicianPerformance
+        {
+            SolvingPercentage = totalTickets == 0 ? 0 : (resolvedTickets * 100.0) / totalTickets,
+            Satisfaction = satisfaction,
+            AnwserTime = responseTime.Average(r => (r.FirstResponseAt!.Value - r.CreatedAt).TotalMinutes)
+        };
+
+        return performance;
     }
 
     public async Task<string> GetCountsasync(string id)

@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using TicketSolver.Domain.Extensions;
+using TicketSolver.Domain.Models;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Ticket;
 using TicketSolver.Infra.EntityFramework.Persistence;
@@ -45,19 +47,21 @@ public class TicketsRepository(EfContext context) : EFRepositoryBase<Tickets>(co
     await context.SaveChangesAsync();
   }
 
-  public async Task<IEnumerable<Tickets>> GetAllByUserAsync(string id)
+  public async Task<IEnumerable<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId, PaginatedQuery paginatedQuery)
   {
     return await context.Tickets
       .Include(t => t.CreatedBy)
-      .Where(t => t.CreatedById == id)
-      .ToListAsync();
+      .Where(t => t.CreatedById == userId)
+      .Paginate(paginatedQuery)
+      .ToListAsync(cancellationToken);
   }
 
-  public async Task<IEnumerable<Tickets>> GetAllByTechAsync(string id)
+  public async Task<IEnumerable<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string techId, PaginatedQuery paginatedQuery)
   {
-    return  await context.Tickets
-      .Where(t => t.TicketUsers.Any(tu => tu.UserId == id))
-      .ToListAsync();
+    return await context.Tickets
+      .Where(t => t.TicketUsers.Any(tu => tu.UserId == techId))
+      .Paginate(paginatedQuery)
+      .ToListAsync(cancellationToken);
   }
 
   public async Task<int> GetCountsasync(string id, int status)

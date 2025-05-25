@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TicketSolver.Infra.EntityFramework.Persistence;
@@ -11,9 +12,11 @@ using TicketSolver.Infra.EntityFramework.Persistence;
 namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
 {
     [DbContext(typeof(EfContext))]
-    partial class EFContextModelSnapshot : ModelSnapshot
+    [Migration("20250525214624_UpdateTickets")]
+    partial class UpdateTickets
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -242,23 +245,6 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
                     b.ToTable("DefTicketUserRoles");
                 });
 
-            modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Defs.DefUserSatisfaction", b =>
-                {
-                    b.Property<short>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("smallint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DefUserSatisfaction");
-                });
-
             modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Defs.DefUserStatus", b =>
                 {
                     b.Property<short>("Id")
@@ -427,9 +413,6 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
                     b.Property<short>("DefTicketUserRoleId")
                         .HasColumnType("smallint");
 
-                    b.Property<DateTime?>("FirstResponseAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<int>("TicketId")
                         .HasColumnType("integer");
 
@@ -472,9 +455,6 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
                     b.Property<short>("DefTicketPriorityId")
                         .HasColumnType("smallint");
 
-                    b.Property<short>("DefUserSatisfactionId")
-                        .HasColumnType("smallint");
-
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
@@ -495,8 +475,6 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
                     b.HasIndex("DefTicketCategoryId");
 
                     b.HasIndex("DefTicketPriorityId");
-
-                    b.HasIndex("DefUserSatisfactionId");
 
                     b.ToTable("Tickets");
                 });
@@ -630,19 +608,11 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TicketSolver.Domain.Persistence.Tables.Defs.DefUserSatisfaction", "DefUserSatisfaction")
-                        .WithMany()
-                        .HasForeignKey("DefUserSatisfactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("CreatedBy");
 
                     b.Navigation("DefTicketCategory");
 
                     b.Navigation("DefTicketPriority");
-
-                    b.Navigation("DefUserSatisfaction");
                 });
 
             modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.User.Users", b =>

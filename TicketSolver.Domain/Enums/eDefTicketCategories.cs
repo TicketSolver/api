@@ -2,6 +2,8 @@ namespace TicketSolver.Domain.Enums;
 
 public enum eDefTicketCategories
 {
-    Bug = 1,
-    Error = 2,
+    Hardware = 1,
+    Software = 2,
+    Network = 3,
+    Access = 4
 }
