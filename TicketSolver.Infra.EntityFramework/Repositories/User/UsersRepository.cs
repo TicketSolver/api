@@ -5,7 +5,7 @@ using TicketSolver.Infra.EntityFramework.Persistence;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.User;
 
-public class UsersRepository(EFContext context) : EFRepositoryBase<Users>(context), IUsersRepository
+public class UsersRepository(EfContext context) : EFRepositoryBase<Users>(context), IUsersRepository
 {
     public override IQueryable<Users> GetAll()
     {

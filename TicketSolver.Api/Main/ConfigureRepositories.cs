@@ -1,6 +1,8 @@
+using TicketSolver.Domain.Repositories.Chat;
 using TicketSolver.Domain.Repositories.Tenant;
 using TicketSolver.Domain.Repositories.Ticket;
 using TicketSolver.Domain.Repositories.User;
+using TicketSolver.Infra.EntityFramework.Repositories.Chat;
 using TicketSolver.Infra.EntityFramework.Repositories.Tenant;
 using TicketSolver.Infra.EntityFramework.Repositories.Ticket;
 using TicketSolver.Infra.EntityFramework.Repositories.User;
@@ -15,5 +17,6 @@ public static class ConfigureRepositories
         services.AddTransient<ITicketsRepository, TicketsRepository>();
         services.AddTransient<ITenantsRepository, TenantsRepository>();
         services.AddTransient<IAttachmentsRepository, AttachmentsRepository>();
+        services.AddTransient<IChatRepository, ChatRepository>();
     }
 }
