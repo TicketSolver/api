@@ -19,6 +19,7 @@ public static class ConfigureServices
         services.AddTransient<IUsersService, UsersService>();
         services.AddTransient<ITenantsService, TenantsService>();
         services.AddTransient<ITicketsService, TicketsService>();
+        services.AddTransient<IAttachmentsService, AttachmentsService>();
         services.AddTransient<IChatService, ChatService>();
     }
 }

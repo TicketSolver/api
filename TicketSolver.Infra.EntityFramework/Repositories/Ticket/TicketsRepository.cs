@@ -1,23 +1,22 @@
 using Microsoft.EntityFrameworkCore;
-using TicketSolver.Application.Models.Ticket;
+using TicketSolver.Domain.Extensions;
+using TicketSolver.Domain.Models;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Ticket;
 using TicketSolver.Infra.EntityFramework.Persistence;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.Ticket;
 
-public class TicketsRepository(EfContext context) : ITicketsRepository
+public class TicketsRepository(EfContext context) : EFRepositoryBase<Tickets>(context), ITicketsRepository
 {
   public async Task<IEnumerable<Tickets>> GetAllAsync()
     => await context.Tickets
       .Include(t => t.CreatedBy)
-      .Include(t => t.AssignedTo)
       .ToListAsync();
 
   public async Task<Tickets?> GetByIdAsync(int id)
     => await context.Tickets
       .Include(t => t.CreatedBy)
-      .Include(t => t.AssignedTo)
       .Include(t => t.Attachments)
       .Include(t => t.TicketUpdates)
       .Include(t => t.TicketUsers)
@@ -37,7 +36,6 @@ public class TicketsRepository(EfContext context) : ITicketsRepository
     await context.SaveChangesAsync();
     var updatedTicket = await context.Tickets
       .Include(t => t.CreatedBy)
-      .Include(t => t.AssignedTo)
       .FirstOrDefaultAsync(t => t.Id == ticket.Id);
     return updatedTicket;
   }
@@ -49,20 +47,21 @@ public class TicketsRepository(EfContext context) : ITicketsRepository
     await context.SaveChangesAsync();
   }
 
-  public async Task<IEnumerable<Tickets>> GetAllByUserAsync(string id)
+  public async Task<IEnumerable<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId, PaginatedQuery paginatedQuery)
   {
     return await context.Tickets
       .Include(t => t.CreatedBy)
-      .Where(t => t.CreatedById == id)
-      .ToListAsync();
+      .Where(t => t.CreatedById == userId)
+      .Paginate(paginatedQuery)
+      .ToListAsync(cancellationToken);
   }
 
-  public async Task<IEnumerable<Tickets>> GetAllByTechAsync(string id)
+  public async Task<IEnumerable<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string techId, PaginatedQuery paginatedQuery)
   {
-    return  await context.Tickets
-      .Include(t => t.AssignedToId)
-      .Where(t => t.AssignedToId == id)
-      .ToListAsync();
+    return await context.Tickets
+      .Where(t => t.TicketUsers.Any(tu => tu.UserId == techId))
+      .Paginate(paginatedQuery)
+      .ToListAsync(cancellationToken);
   }
 
   public async Task<int> GetCountsasync(string id, int status)
@@ -95,8 +94,7 @@ public class TicketsRepository(EfContext context) : ITicketsRepository
   public async Task<IEnumerable<Tickets>> GetLatestTechAsync(string id)
   {
     return await context.Tickets
-      .Include(t => t.AssignedToId)
-      .Where(t => t.AssignedToId == id)
+      .Where(t => t.TicketUsers.Any(tu => tu.UserId == id))
       .OrderByDescending(t => t.CreatedAt).Take(5)
       .ToListAsync();
   }

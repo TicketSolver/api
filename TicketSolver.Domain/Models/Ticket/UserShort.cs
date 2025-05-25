@@ -1,6 +1,4 @@
-using TicketSolver.Domain.Enums;
-
-namespace TicketSolver.Application.Models.Ticket;
+namespace TicketSolver.Domain.Models.Ticket;
 
 public class UserShort
 {

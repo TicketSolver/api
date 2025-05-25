@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketSolver.Api.Models;
 using TicketSolver.Application.Services.Ticket.Interfaces;
-using TicketSolver.Domain.Enums;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using System.Security.Claims;
+using TicketSolver.Api.Exceptions;
 using TicketSolver.Application.Exceptions.Ticket;
+using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models;
+using TicketSolver.Domain.Models;
 
 namespace TicketSolver.Api.Controllers;
 
@@ -71,36 +73,52 @@ public class TicketsController(ITicketsService service) : ShellController
 
 
     [HttpGet("technician/")]
-    public async Task<ActionResult<IEnumerable<Tickets>>> GetAllByTech()
+    public async Task<ActionResult<IEnumerable<Tickets>>> GetAllByTech(CancellationToken cancellationToken, [FromQuery] PaginatedQuery paginatedQuery)
     {
-        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (id is null)
-        {
-            return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
-        }
         try
         {
-            var tickets = await service.GetAllByTechAsync(id);
-            if (tickets is not null)
-                return Ok(ApiResponse.Ok(tickets));
-            return NotFound(ApiResponse.Ok(new {},"Nenhum ticket encontrado"));
+            var tickets = await service.GetAllByTechAsync(cancellationToken, AuthenticatedUser.UserId, paginatedQuery);
+            return Ok(ApiResponse.Ok(tickets));
+        }
+        catch (UserNotFoundException)
+        {
+            throw new NotFoundException("Usuário não encontrado!");
         }
         catch (TicketException ex)
         {
             return NotFound(ApiResponse.Fail(ex.Message));
         }
-        
+    }
+
+    [HttpGet("technician/{userId}/performance")]
+    public async Task<ActionResult<IEnumerable<Tickets>>> GetTechnicianPerformanceAsync(CancellationToken cancellationToken, string userId, [FromQuery] PaginatedQuery paginatedQuery)
+    {
+        try
+        {
+            var tickets = await service.GetTechPerformanceAsync(cancellationToken, AuthenticatedUser.UserId);
+            return Ok(ApiResponse.Ok(tickets));
+        }
+        catch (UserNotFoundException)
+        {
+            throw new NotFoundException("Usuário não encontrado!");
+        }
+        catch (TicketException ex)
+        {
+            return NotFound(ApiResponse.Fail(ex.Message));
+        }
     }
     
-    [HttpGet("technician/{id}/")]
-    public async Task<ActionResult<IEnumerable<Tickets>>> GetAllByTech(string id)
+    [HttpGet("technician/{techId}/")]
+    public async Task<ActionResult<IEnumerable<Tickets>>> GetAllByTech(string techId, CancellationToken cancellationToken, [FromQuery] PaginatedQuery paginatedQuery)
     {
         try
         {
-            var tickets = await service.GetAllByTechAsync(id);
-            if (tickets is not null)
-                return Ok(ApiResponse.Ok(tickets));
-            return NotFound(ApiResponse.Ok(new {},"Nenhum ticket encontrado"));
+            var tickets = await service.GetAllByTechAsync(cancellationToken, techId, paginatedQuery);
+            return Ok(ApiResponse.Ok(tickets));
+        }
+        catch (UserNotFoundException)
+        {
+            throw new NotFoundException("Usuário não encontrado!");
         }
         catch (TicketException ex)
         {
@@ -108,23 +126,17 @@ public class TicketsController(ITicketsService service) : ShellController
         }
         
     }
-
-
-
     
     [HttpGet("user/")]
-    public async Task<IActionResult> GetAllByUser(){
-        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (id is null)
-        {
-            return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
-        }
+    public async Task<IActionResult> GetAllByUser(CancellationToken cancellationToken, PaginatedQuery paginatedQuery){
         try
         {
-            var tickets = await service.GetAllByUserAsync(id);
-            if (tickets is not null)
-                return Ok(ApiResponse.Ok(tickets));
-            return NotFound(ApiResponse.Ok(new {},"Nenhum ticket encontrado"));
+            var tickets = await service.GetAllByUserAsync(cancellationToken, AuthenticatedUser.UserId, paginatedQuery);
+            return Ok(ApiResponse.Ok(tickets));
+        }
+        catch (UserNotFoundException)
+        {
+            throw new NotFoundException("Usuário não encontrado!");
         }
         catch (TicketException ex)
         {
@@ -133,10 +145,10 @@ public class TicketsController(ITicketsService service) : ShellController
     }
     
     [HttpGet("user/{id}/")]
-    public async Task<IActionResult> GetAllByUser(string id){
+    public async Task<IActionResult> GetAllByUser(CancellationToken cancellationToken, string id, PaginatedQuery paginatedQuery){
         try
         {
-            var tickets = await service.GetAllByUserAsync(id);
+            var tickets = await service.GetAllByUserAsync(cancellationToken, id, paginatedQuery);
             if (tickets is not null)
                 return Ok(ApiResponse.Ok(tickets));
             return NotFound(ApiResponse.Ok(new {},"Nenhum ticket encontrado"));
@@ -158,7 +170,7 @@ public class TicketsController(ITicketsService service) : ShellController
     }
     
      [HttpPut("{id:int}/assign/")]
-        public async Task<IActionResult> AssignTicketToTech(int id)
+        public async Task<IActionResult> AssignTicketToTech(int id, CancellationToken cancellationToken)
         {
             var  techId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (techId is null)
@@ -168,7 +180,7 @@ public class TicketsController(ITicketsService service) : ShellController
 
             try
             {
-                var ok = await service.AssignedTechTicketAsync(id, techId);
+                var ok = await service.AssignedTechTicketAsync(cancellationToken, id, techId);
                 if (!ok)
                     return BadRequest(ApiResponse.Fail("Ticket ou técnico não encontrado (IDs inválidos)."));
                 return Ok(ApiResponse.Ok("","Ticket atribuído com sucesso!"));

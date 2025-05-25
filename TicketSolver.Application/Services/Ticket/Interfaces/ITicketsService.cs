@@ -1,5 +1,7 @@
 using TicketSolver.Application.Models;
-using TicketSolver.Application.Models.Ticket;
+using TicketSolver.Domain.Models;
+using TicketSolver.Domain.Models.Ticket;
+using TicketSolver.Domain.Models.Users;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 
 namespace TicketSolver.Application.Services.Ticket.Interfaces;
@@ -12,9 +14,12 @@ public interface ITicketsService
     Task<Tickets> UpdateAsync(TicketDTO ticket, int id);
     Task<bool> DeleteAsync(int id);
     Task<bool> UpdateTicketStatusAsync(int id, short status);
-    Task<bool> AssignedTechTicketAsync(int id, string techId);
-    Task<IEnumerable<Tickets>> GetAllByUserAsync(string id);
-    Task<IEnumerable<Tickets>> GetAllByTechAsync(string id);
+    Task<bool> AssignedTechTicketAsync(CancellationToken cancellationToken, int ticketId, string techId);
+
+    Task<IEnumerable<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId,
+        PaginatedQuery paginatedQuery);
+    Task<IEnumerable<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string techId, PaginatedQuery paginatedQuery);
+    Task<TechnicianPerformance> GetTechPerformanceAsync(CancellationToken cancellationToken, string techId);
     Task<string> GetCountsasync(string id);
     Task<IEnumerable<Tickets>> GetLatestUserAsync(string id);
     Task<IEnumerable<Tickets>> GetLatestTechAsync(string id);

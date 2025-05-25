@@ -16,6 +16,8 @@ public static class ConfigureRepositories
         services.AddTransient<IUsersRepository, UsersRepository>();
         services.AddTransient<ITicketsRepository, TicketsRepository>();
         services.AddTransient<ITenantsRepository, TenantsRepository>();
+        services.AddTransient<IAttachmentsRepository, AttachmentsRepository>();
         services.AddTransient<IChatRepository, ChatRepository>();
+        services.AddTransient<ITicketUsersRepository, TicketUsersRepository>();
     }
 }

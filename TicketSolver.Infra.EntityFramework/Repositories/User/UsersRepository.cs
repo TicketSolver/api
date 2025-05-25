@@ -12,12 +12,6 @@ public class UsersRepository(EfContext context) : EFRepositoryBase<Users>(contex
         return base.GetAll().AsNoTracking();
     }
 
-    public async Task<IEnumerable<Users>> ExecuteQueryAsync(IQueryable<Users> query,
-        CancellationToken cancellationToken = default)
-    {
-        return await query.ToListAsync(cancellationToken);
-    }
-
     public IQueryable<Users> GetByEmail(string email)
     {
         return GetAll()
@@ -45,16 +39,16 @@ public class UsersRepository(EfContext context) : EFRepositoryBase<Users>(contex
 
     public async Task<Users> CreateUserAsync(Users user, CancellationToken cancellationToken = default)
     {
-        await context.Users.AddAsync(user, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
+        await Context.Users.AddAsync(user, cancellationToken);
+        await Context.SaveChangesAsync(cancellationToken);
 
         return user;
     }
 
     public async Task<Users> UpdateUserAsync(Users user, CancellationToken cancellationToken = default)
     {
-        context.Users.Update(user);
-        await context.SaveChangesAsync(cancellationToken);
+        Context.Users.Update(user);
+        await Context.SaveChangesAsync(cancellationToken);
         
         return user;
     }

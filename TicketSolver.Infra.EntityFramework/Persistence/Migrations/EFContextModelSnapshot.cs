@@ -102,6 +102,78 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
                     b.UseTphMappingStrategy();
                 });
 
+            modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Chat.TicketChat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ChatHistory")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasDefaultValue("[]");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastMessageAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("TicketId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalMessages")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatHistory")
+                        .HasDatabaseName("IX_TicketChats_ChatHistory_Gin");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("ChatHistory"), "gin");
+
+                    b.HasIndex("LastMessageAt")
+                        .HasDatabaseName("IX_TicketChats_LastMessageAt");
+
+                    b.HasIndex("TicketId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_TicketChats_TicketId");
+
+                    b.ToTable("Chat");
+                });
+
+            modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Defs.DefStorageProviders", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DefStorageProviders");
+                });
+
             modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Defs.DefTicketCategories", b =>
                 {
                     b.Property<short>("Id")
@@ -168,6 +240,23 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DefTicketUserRoles");
+                });
+
+            modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Defs.DefUserSatisfaction", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DefUserSatisfaction");
                 });
 
             modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Defs.DefUserStatus", b =>
@@ -247,11 +336,17 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<short>("DefStorageProviderId")
+                        .HasColumnType("smallint");
+
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("FilePath")
+                    b.Property<decimal>("FileSize")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Key")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -261,9 +356,21 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("DefStorageProviderId");
+
                     b.HasIndex("TicketId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Attachments");
                 });
@@ -320,6 +427,9 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
                     b.Property<short>("DefTicketUserRoleId")
                         .HasColumnType("smallint");
 
+                    b.Property<DateTime?>("FirstResponseAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("TicketId")
                         .HasColumnType("integer");
 
@@ -349,12 +459,6 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AssignedToId")
-                        .HasColumnType("text");
-
-                    b.Property<short>("Category")
-                        .HasColumnType("smallint");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -362,11 +466,17 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<short>("DefTicketCategoryId")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("DefTicketPriorityId")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("DefUserSatisfactionId")
+                        .HasColumnType("smallint");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
-
-                    b.Property<short>("Priority")
-                        .HasColumnType("smallint");
 
                     b.Property<short>("Status")
                         .HasColumnType("smallint");
@@ -380,9 +490,13 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignedToId");
-
                     b.HasIndex("CreatedById");
+
+                    b.HasIndex("DefTicketCategoryId");
+
+                    b.HasIndex("DefTicketPriorityId");
+
+                    b.HasIndex("DefUserSatisfactionId");
 
                     b.ToTable("Tickets");
                 });
@@ -419,15 +533,43 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
                     b.HasDiscriminator().HasValue("Users");
                 });
 
+            modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Chat.TicketChat", b =>
+                {
+                    b.HasOne("TicketSolver.Domain.Persistence.Tables.Ticket.Tickets", "Ticket")
+                        .WithOne()
+                        .HasForeignKey("TicketSolver.Domain.Persistence.Tables.Chat.TicketChat", "TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_TicketChats_Tickets");
+
+                    b.Navigation("Ticket");
+                });
+
             modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Ticket.Attachments", b =>
                 {
+                    b.HasOne("TicketSolver.Domain.Persistence.Tables.Defs.DefStorageProviders", "DefStorageProvider")
+                        .WithMany()
+                        .HasForeignKey("DefStorageProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("TicketSolver.Domain.Persistence.Tables.Ticket.Tickets", "Ticket")
                         .WithMany("Attachments")
                         .HasForeignKey("TicketId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("TicketSolver.Domain.Persistence.Tables.User.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DefStorageProvider");
+
                     b.Navigation("Ticket");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Ticket.TicketUpdates", b =>
@@ -470,19 +612,37 @@ namespace TicketSolver.Infra.EntityFramework.Persistence.Migrations
 
             modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.Ticket.Tickets", b =>
                 {
-                    b.HasOne("TicketSolver.Domain.Persistence.Tables.User.Users", "AssignedTo")
-                        .WithMany()
-                        .HasForeignKey("AssignedToId");
-
                     b.HasOne("TicketSolver.Domain.Persistence.Tables.User.Users", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("AssignedTo");
+                    b.HasOne("TicketSolver.Domain.Persistence.Tables.Defs.DefTicketCategories", "DefTicketCategory")
+                        .WithMany()
+                        .HasForeignKey("DefTicketCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TicketSolver.Domain.Persistence.Tables.Defs.DefTicketPriorities", "DefTicketPriority")
+                        .WithMany()
+                        .HasForeignKey("DefTicketPriorityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TicketSolver.Domain.Persistence.Tables.Defs.DefUserSatisfaction", "DefUserSatisfaction")
+                        .WithMany()
+                        .HasForeignKey("DefUserSatisfactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("CreatedBy");
+
+                    b.Navigation("DefTicketCategory");
+
+                    b.Navigation("DefTicketPriority");
+
+                    b.Navigation("DefUserSatisfaction");
                 });
 
             modelBuilder.Entity("TicketSolver.Domain.Persistence.Tables.User.Users", b =>

@@ -1,4 +1,4 @@
-namespace TicketSolver.Application.Models.Ticket;
+namespace TicketSolver.Domain.Models.Ticket;
 
 public class TicketShort
 {
