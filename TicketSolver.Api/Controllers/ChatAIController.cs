@@ -4,47 +4,53 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using GroqNet;
 using GroqNet.ChatCompletions;
 using TicketSolver.Api.Models;
-using TicketSolver.Application.Services.ChatAI;
 using TicketSolver.Application.Services.ChatAI.Interface;
 
 namespace TicketSolver.Api.Controllers
 {
     [ApiController]
     [Route("api/chat")]
-    public class ChatController : ControllerBase
+    public class ChatAiController : ControllerBase
     {
-        private readonly IChatService _chatService;
+        private readonly IChatAiService _chatService;
 
-        // guardamos em memória o histórico de cada conversa
+        // store em memória de historiais por ConversationId
         private static readonly ConcurrentDictionary<Guid, GroqChatHistory> _histories
             = new();
 
-        public ChatController(IChatService chatService)
+        public ChatAiController(IChatAiService chatService)
             => _chatService = chatService;
 
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ChatRequest request, CancellationToken ct)
+        [HttpPost("ask")]
+        public async Task<IActionResult> Ask(
+            [FromBody] ChatRequest request,
+            CancellationToken ct
+        )
         {
-            // 1) define ou gera um novo ID de conversa
-            var convId  = request.ConversationId ?? Guid.NewGuid();
+            if (string.IsNullOrWhiteSpace(request.Prompt))
+                return BadRequest("O campo 'Prompt' não pode estar vazio.");
 
-            // 2) recupera (ou inicia) o histórico desta conversa
+            // 1) decide ou gera o ConversationId
+            var convId = request.ConversationId ?? Guid.NewGuid();
+
+            // 2) recupera/cria o history
             var history = _histories.GetOrAdd(convId, _ => new GroqChatHistory());
 
-            // 3) adiciona a mensagem do usuário
-            history.Add(new GroqMessage(request.Prompt) { Role = "user" });
+            // 3) chama o serviço
+            var reply = await _chatService.AskAsync(
+                history,
+                request.Prompt,
+                request.SystemPrompt
+            );
 
-            // 4) envia tudo para o serviço / GroqClient
-            var reply = await _chatService.AskAsync(history, ct);
-
-            // 5) adiciona a resposta da IA no histórico
+            // 4) adiciona a resposta ao histórico
             history.Add(new GroqMessage(reply) { Role = "assistant" });
 
-            // 6) devolve o texto e o ID de conversa
-            var response = new ChatResponse(convId, reply);
-            return Ok(response);
+            // 5) devolve o DTO de resposta
+            return Ok(ApiResponse.Ok(new ChatResponse(convId, reply)));
         }
     }
 }

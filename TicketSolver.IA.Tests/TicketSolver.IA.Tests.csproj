@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Test runner e cobertura -->
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+        <PackageReference Include="xunit"                    Version="2.9.2" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.0.0" />
+        <PackageReference Include="coverlet.collector"       Version="6.0.2" />
+
+        <!-- Mocks -->
+        <PackageReference Include="Moq"                      Version="4.20.72" />
+
+        <!-- Tipos do Groq.NET (já inclui ChatCompletions) -->
+        <PackageReference Include="GroqNet"                  Version="1.0.1" />
+
+        <!-- MVC para ControllerBase, ActionResult, etc -->
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Referências aos projetos de PRODUÇÃO -->
+        <ProjectReference Include="..\TicketSolver.Api\TicketSolver.Api.csproj" />
+        <ProjectReference Include="..\TicketSolver.Application\TicketSolver.Application.csproj" />
+        <ProjectReference Include="..\TicketSolver.Domain\TicketSolver.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

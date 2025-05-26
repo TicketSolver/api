@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <IsPackable>false</IsPackable>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
@@ -10,11 +11,17 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
         <PackageReference Include="xunit" Version="2.9.2" />
         <PackageReference Include="xunit.runner.visualstudio" Version="3.0.0" />
+        <PackageReference Include="coverlet.collector" Version="6.0.2" />
     </ItemGroup>
-
+    
     <ItemGroup>
         <!-- Copia o .env para bin/Debug/net9.0 ao compilar -->
         <None Include=".env" CopyToOutputDirectory="Always" />
+        <PackageReference Include="Moq"                      Version="4.20.72" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="GroqNet" Version="1.0.1" />
     </ItemGroup>
 
     <ItemGroup>

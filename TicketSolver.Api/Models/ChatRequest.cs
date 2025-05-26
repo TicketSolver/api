@@ -1,6 +1,6 @@
 ﻿namespace TicketSolver.Api.Models
 {
-    public record ChatRequest(Guid? ConversationId, string Prompt);
+    public record ChatRequest(Guid? ConversationId, string Prompt, string? SystemPrompt);
 }
 
 namespace TicketSolver.Api.Models
