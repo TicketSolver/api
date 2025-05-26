@@ -16,7 +16,8 @@ public class AttachmentsService(
     ITicketsRepository ticketsRepository
 ) : IAttachmentsService
 {
-    public async Task<FileUploadResult> UploadFileToTicketAsync(CancellationToken cancellationToken, int ticketId, AuthenticatedUser user,
+    public async Task<FileUploadResult> UploadFileToTicketAsync(CancellationToken cancellationToken, int ticketId,
+        AuthenticatedUser user,
         FileUploadRequest request)
     {
         var ticketExists = await ticketsRepository
@@ -42,8 +43,9 @@ public class AttachmentsService(
 
         return uploadedFile;
     }
-    
-    public async Task<bool> DeleteAttachmentAsync(CancellationToken cancellationToken, int attachmentId, AuthenticatedUser user)
+
+    public async Task<bool> DeleteAttachmentAsync(CancellationToken cancellationToken, int attachmentId,
+        AuthenticatedUser user)
     {
         var attachment = await attachmentsRepository
             .GetById(attachmentId)
@@ -65,5 +67,23 @@ public class AttachmentsService(
             .ExecuteDeleteAsync(cancellationToken);
 
         return deletedItem == 1;
+    }
+    
+    public async Task<List<AttachmentDto>> GetTicketAttachmentsAsync(CancellationToken cancellationToken, int ticketId)
+    {
+        var ticketExists = await ticketsRepository.GetById(ticketId).AnyAsync(cancellationToken);
+        if(!ticketExists)
+            throw new TicketNotFoundException();
+        
+        return await attachmentsRepository.GetAll()
+            .AsNoTracking()
+            .Where(at => at.TicketId == ticketId)
+            .Select(at => new AttachmentDto()
+            {
+                Id = at.Id,
+                Url = at.Url,
+                FileName = at.FileName
+            })
+            .ToListAsync(cancellationToken);
     }
 }
