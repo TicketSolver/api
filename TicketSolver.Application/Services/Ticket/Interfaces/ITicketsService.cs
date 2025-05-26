@@ -16,9 +16,9 @@ public interface ITicketsService
     Task<bool> UpdateTicketStatusAsync(int id, short status);
     Task<bool> AssignedTechTicketAsync(CancellationToken cancellationToken, int ticketId, string techId);
 
-    Task<IEnumerable<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId,
+    Task<PaginatedResponse<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId,
         PaginatedQuery paginatedQuery);
-    Task<IEnumerable<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string techId, PaginatedQuery paginatedQuery);
+    Task<PaginatedResponse<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string techId, PaginatedQuery paginatedQuery, bool history = false);
     Task<TechnicianPerformance> GetTechPerformanceAsync(CancellationToken cancellationToken, string techId);
     Task<TechnicianCounters> GetTechCountersAsync(CancellationToken cancellationToken, string techId);
     Task<string> GetCountsasync(string id);

@@ -74,11 +74,11 @@ public class TicketsController(ITicketsService service) : ShellController
 
 
     [HttpGet("technician/")]
-    public async Task<ActionResult<IEnumerable<Tickets>>> GetAllByTech(CancellationToken cancellationToken, [FromQuery] PaginatedQuery paginatedQuery)
+    public async Task<ActionResult<PaginatedResponse<Tickets>>> GetAllByTech(CancellationToken cancellationToken, [FromQuery] PaginatedQuery paginatedQuery, [FromQuery] bool history)
     {
         try
         {
-            var tickets = await service.GetAllByTechAsync(cancellationToken, AuthenticatedUser.UserId, paginatedQuery);
+            var tickets = await service.GetAllByTechAsync(cancellationToken, AuthenticatedUser.UserId, paginatedQuery, history);
             return Ok(ApiResponse.Ok(tickets));
         }
         catch (UserNotFoundException)
@@ -128,11 +128,11 @@ public class TicketsController(ITicketsService service) : ShellController
     }
     
     [HttpGet("technician/{techId}/")]
-    public async Task<ActionResult<IEnumerable<Tickets>>> GetAllByTech(string techId, CancellationToken cancellationToken, [FromQuery] PaginatedQuery paginatedQuery)
+    public async Task<ActionResult<PaginatedResponse<Tickets>>> GetAllByTech(string techId, CancellationToken cancellationToken, [FromQuery] PaginatedQuery paginatedQuery, [FromQuery] bool history)
     {
         try
         {
-            var tickets = await service.GetAllByTechAsync(cancellationToken, techId, paginatedQuery);
+            var tickets = await service.GetAllByTechAsync(cancellationToken, techId, paginatedQuery, history);
             return Ok(ApiResponse.Ok(tickets));
         }
         catch (UserNotFoundException)

@@ -142,24 +142,26 @@ public class TicketsService(
         return await ticketUsersRepository.InsertAsync(cancellationToken, ticketUser);
     }
 
-    public async Task<IEnumerable<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId,
+    public async Task<PaginatedResponse<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId,
         PaginatedQuery paginatedQuery)
     {
-        var existing = usersRepo.GetById(userId);
-        IEnumerable<Tickets> tickets = new List<Tickets>();
-        if (existing.FirstOrDefault() is null)
-            return tickets;
-        tickets = await repo.GetAllByUserAsync(cancellationToken, userId, paginatedQuery);
-        return tickets;
+        var userExists = await usersRepo.GetById(userId).AnyAsync(cancellationToken);
+        if (!userExists)
+            throw new UserNotFoundException();
+        
+        return await repo.GetAllByUserAsync(cancellationToken, userId, paginatedQuery);
     }
 
-    public async Task<IEnumerable<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string id,
-        PaginatedQuery paginatedQuery)
+    public async Task<PaginatedResponse<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string id,
+        PaginatedQuery paginatedQuery, bool history = false)
     {
         var userExists = await usersRepo.GetById(id).AnyAsync(cancellationToken);
         if (!userExists)
             throw new UserNotFoundException();
 
+        if (history)
+            return await repo.GetHistoryByTechAsync(cancellationToken, id, paginatedQuery);
+        
         return await repo.GetAllByTechAsync(cancellationToken, id, paginatedQuery);
     }
 
