@@ -10,8 +10,7 @@ public class Tickets : EntityDates
     public string Title { get; set; } = null!;
     public string? Description { get; set; }
     public short Status { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public DateTime? SolvedAt { get; set; }
     public string CreatedById { get; set; }
     public short DefTicketPriorityId { get; set; }
     public short DefTicketCategoryId { get; set; }

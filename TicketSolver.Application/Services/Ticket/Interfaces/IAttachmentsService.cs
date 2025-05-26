@@ -24,4 +24,13 @@ public interface IAttachmentsService
     /// <returns></returns>
     /// <exception cref="AttachmentNotFoundException"></exception>
     Task<bool> DeleteAttachmentAsync(CancellationToken cancellationToken, int attachmentId, AuthenticatedUser user);
+    
+    /// <summary>
+    /// Busca anexos do ticket
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="ticketId"></param>
+    /// <returns></returns>
+    /// <exception cref="TicketNotFoundException"></exception>
+    Task<List<AttachmentDto>> GetTicketAttachmentsAsync(CancellationToken cancellationToken, int ticketId);
 }

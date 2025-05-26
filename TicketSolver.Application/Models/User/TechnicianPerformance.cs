@@ -1,4 +1,4 @@
-﻿namespace TicketSolver.Domain.Models.Users;
+﻿namespace TicketSolver.Application.Models.User;
 
 public class TechnicianPerformance
 {

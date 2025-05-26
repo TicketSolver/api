@@ -11,9 +11,10 @@ public interface ITicketsRepository : IRepositoryBase<Tickets>
     Task<Tickets?> UpdateAsync(Tickets ticket);
     Task DeleteAsync(Tickets ticket);
 
-    Task<IEnumerable<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId, PaginatedQuery paginatedQuery);
+    Task<PaginatedResponse<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId, PaginatedQuery paginatedQuery);
     
-    Task<IEnumerable<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string techId, PaginatedQuery paginatedQuery);
+    Task<PaginatedResponse<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string techId, PaginatedQuery paginatedQuery);
+    Task<PaginatedResponse<Tickets>> GetHistoryByTechAsync(CancellationToken cancellationToken, string techId, PaginatedQuery paginatedQuery);
 
     Task<int> GetCountsasync(string id, int status);
     Task<int> GetCountsasync(string id);

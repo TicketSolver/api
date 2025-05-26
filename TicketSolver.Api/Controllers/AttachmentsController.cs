@@ -29,7 +29,9 @@ public class AttachmentsController(
                 ContentType = file.ContentType
             };
 
-            var uploadedFile = await attachmentsService.UploadFileToTicketAsync(cancellationToken, ticketId, AuthenticatedUser, request);
+            var uploadedFile =
+                await attachmentsService.UploadFileToTicketAsync(cancellationToken, ticketId, AuthenticatedUser,
+                    request);
             return Ok(ApiResponse.Ok(uploadedFile));
         }
         catch (TicketNotFoundException)
@@ -43,16 +45,31 @@ public class AttachmentsController(
     {
         try
         {
-            var success = await attachmentsService.DeleteAttachmentAsync(cancellationToken, attachmentId, AuthenticatedUser);
-        
+            var success =
+                await attachmentsService.DeleteAttachmentAsync(cancellationToken, attachmentId, AuthenticatedUser);
+
             if (!success)
                 return NotFound($"Não foi possível remover o anexo [{attachmentId}]'.");
-        
-            return Ok(ApiResponse.Ok(new {}));
+
+            return Ok(ApiResponse.Ok(new { }));
         }
         catch (AttachmentNotFoundException)
         {
             throw new NotFoundException("Anexo não encontrado!");
+        }
+    }
+
+    [HttpGet("{ticketId}")]
+    public async Task<IActionResult> GetTicketAttachmentsAsync(CancellationToken cancellationToken, int ticketId)
+    {
+        try
+        {
+            var attachments = await attachmentsService.GetTicketAttachmentsAsync(cancellationToken, ticketId);
+            return Ok(ApiResponse.Ok(attachments));
+        }
+        catch (TicketNotFoundException)
+        {
+            throw new NotFoundException("Ticket não encontrado!");
         }
     }
 }

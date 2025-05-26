@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using TicketSolver.Application.Exceptions.Ticket;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models;
+using TicketSolver.Application.Models.User;
 using TicketSolver.Application.Services.Ticket.Interfaces;
 using TicketSolver.Domain.Enums;
 using TicketSolver.Domain.Models;
 using TicketSolver.Domain.Models.Ticket;
-using TicketSolver.Domain.Models.Users;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Ticket;
 using TicketSolver.Domain.Repositories.User;
@@ -142,24 +142,26 @@ public class TicketsService(
         return await ticketUsersRepository.InsertAsync(cancellationToken, ticketUser);
     }
 
-    public async Task<IEnumerable<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId,
+    public async Task<PaginatedResponse<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId,
         PaginatedQuery paginatedQuery)
     {
-        var existing = usersRepo.GetById(userId);
-        IEnumerable<Tickets> tickets = new List<Tickets>();
-        if (existing.FirstOrDefault() is null)
-            return tickets;
-        tickets = await repo.GetAllByUserAsync(cancellationToken, userId, paginatedQuery);
-        return tickets;
+        var userExists = await usersRepo.GetById(userId).AnyAsync(cancellationToken);
+        if (!userExists)
+            throw new UserNotFoundException();
+        
+        return await repo.GetAllByUserAsync(cancellationToken, userId, paginatedQuery);
     }
 
-    public async Task<IEnumerable<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string id,
-        PaginatedQuery paginatedQuery)
+    public async Task<PaginatedResponse<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string id,
+        PaginatedQuery paginatedQuery, bool history = false)
     {
         var userExists = await usersRepo.GetById(id).AnyAsync(cancellationToken);
         if (!userExists)
             throw new UserNotFoundException();
 
+        if (history)
+            return await repo.GetHistoryByTechAsync(cancellationToken, id, paginatedQuery);
+        
         return await repo.GetAllByTechAsync(cancellationToken, id, paginatedQuery);
     }
 
@@ -200,10 +202,31 @@ public class TicketsService(
         {
             SolvingPercentage = totalTickets == 0 ? 0 : (resolvedTickets * 100.0) / totalTickets,
             Satisfaction = satisfaction,
-            AnwserTime = responseTime.Average(r => (r.FirstResponseAt!.Value - r.CreatedAt).TotalMinutes)
+            AnwserTime = responseTime.Count == 0
+                ? 0
+                : responseTime.Average(r => (r.FirstResponseAt!.Value - r.CreatedAt).TotalMinutes),
         };
 
         return performance;
+    }
+
+    public async Task<TechnicianCounters> GetTechCountersAsync(CancellationToken cancellationToken, string techId)
+    {
+        var today = DateTime.UtcNow.Date;
+
+        var result = await ticketUsersRepository.GetByUserId(techId)
+            .AsNoTracking()
+            .GroupBy(tu => 1)
+            .Select(g => new TechnicianCounters
+            {
+                CurrentlyWorking = g.Count(tu => tu.Ticket.SolvedAt == null),
+                Critical = g.Count(tu => tu.Ticket.SolvedAt == null && tu.Ticket.DefTicketPriorityId == (short)eDefTicketPriorities.Urgent),
+                HighPriority = g.Count(tu => tu.Ticket.SolvedAt == null && tu.Ticket.DefTicketPriorityId == (short)eDefTicketPriorities.High),
+                SolvedToday = g.Count(tu => tu.Ticket.SolvedAt != null && tu.Ticket.SolvedAt >= today)
+            })
+            .FirstOrDefaultAsync(cancellationToken) ?? new TechnicianCounters();
+
+        return result;
     }
 
     public async Task<string> GetCountsasync(string id)
