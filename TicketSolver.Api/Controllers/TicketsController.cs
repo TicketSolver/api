@@ -8,6 +8,7 @@ using TicketSolver.Api.Exceptions;
 using TicketSolver.Application.Exceptions.Ticket;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models;
+using TicketSolver.Application.Models.User;
 using TicketSolver.Domain.Models;
 
 namespace TicketSolver.Api.Controllers;
@@ -91,12 +92,30 @@ public class TicketsController(ITicketsService service) : ShellController
     }
 
     [HttpGet("technician/{userId}/performance")]
-    public async Task<ActionResult<IEnumerable<Tickets>>> GetTechnicianPerformanceAsync(CancellationToken cancellationToken, string userId, [FromQuery] PaginatedQuery paginatedQuery)
+    public async Task<ActionResult<TechnicianPerformance>> GetTechnicianPerformanceAsync(CancellationToken cancellationToken, string userId)
     {
         try
         {
-            var tickets = await service.GetTechPerformanceAsync(cancellationToken, AuthenticatedUser.UserId);
-            return Ok(ApiResponse.Ok(tickets));
+            var performance = await service.GetTechPerformanceAsync(cancellationToken, AuthenticatedUser.UserId);
+            return Ok(ApiResponse.Ok(performance));
+        }
+        catch (UserNotFoundException)
+        {
+            throw new NotFoundException("Usuário não encontrado!");
+        }
+        catch (TicketException ex)
+        {
+            return NotFound(ApiResponse.Fail(ex.Message));
+        }
+    }
+    
+    [HttpGet("technician/{userId}/counters")]
+    public async Task<ActionResult<TechnicianCounters>> GetTechnicianCountersAsync(CancellationToken cancellationToken, string userId)
+    {
+        try
+        {
+            var performance = await service.GetTechCountersAsync(cancellationToken, AuthenticatedUser.UserId);
+            return Ok(ApiResponse.Ok(performance));
         }
         catch (UserNotFoundException)
         {

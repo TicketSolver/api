@@ -14,4 +14,10 @@ public class TicketUsersRepository(EfContext context) : EFRepositoryBase<TicketU
             .Where(tu => tu.TicketId == ticketId && tu.UserId == userId)
             .AnyAsync(cancellationToken);
     }
+
+    public IQueryable<TicketUsers> GetByUserId(string userId)
+    {
+        return GetAll()
+            .Where(tu => tu.UserId == userId);
+    }
 }

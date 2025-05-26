@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using TicketSolver.Application.Exceptions.Ticket;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models;
+using TicketSolver.Application.Models.User;
 using TicketSolver.Application.Services.Ticket.Interfaces;
 using TicketSolver.Domain.Enums;
 using TicketSolver.Domain.Models;
 using TicketSolver.Domain.Models.Ticket;
-using TicketSolver.Domain.Models.Users;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Ticket;
 using TicketSolver.Domain.Repositories.User;
@@ -200,10 +200,31 @@ public class TicketsService(
         {
             SolvingPercentage = totalTickets == 0 ? 0 : (resolvedTickets * 100.0) / totalTickets,
             Satisfaction = satisfaction,
-            AnwserTime = responseTime.Average(r => (r.FirstResponseAt!.Value - r.CreatedAt).TotalMinutes)
+            AnwserTime = responseTime.Count == 0
+                ? 0
+                : responseTime.Average(r => (r.FirstResponseAt!.Value - r.CreatedAt).TotalMinutes),
         };
 
         return performance;
+    }
+
+    public async Task<TechnicianCounters> GetTechCountersAsync(CancellationToken cancellationToken, string techId)
+    {
+        var today = DateTime.UtcNow.Date;
+
+        var result = await ticketUsersRepository.GetByUserId(techId)
+            .AsNoTracking()
+            .GroupBy(tu => 1)
+            .Select(g => new TechnicianCounters
+            {
+                CurrentlyWorking = g.Count(tu => tu.Ticket.SolvedAt == null),
+                Critical = g.Count(tu => tu.Ticket.SolvedAt == null && tu.Ticket.DefTicketPriorityId == (short)eDefTicketPriorities.Urgent),
+                HighPriority = g.Count(tu => tu.Ticket.SolvedAt == null && tu.Ticket.DefTicketPriorityId == (short)eDefTicketPriorities.High),
+                SolvedToday = g.Count(tu => tu.Ticket.SolvedAt != null && tu.Ticket.SolvedAt >= today)
+            })
+            .FirstOrDefaultAsync(cancellationToken) ?? new TechnicianCounters();
+
+        return result;
     }
 
     public async Task<string> GetCountsasync(string id)
