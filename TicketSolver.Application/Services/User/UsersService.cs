@@ -1,9 +1,11 @@
-﻿using TicketSolver.Application.Exceptions.Users;
+﻿using Microsoft.EntityFrameworkCore;
+using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models.Auth;
 using TicketSolver.Application.Services.User.Interfaces;
 using TicketSolver.Domain.Enums;
 using TicketSolver.Domain.Extensions;
 using TicketSolver.Domain.Models;
+using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Persistence.Tables.User;
 using TicketSolver.Domain.Repositories.User;
 
@@ -51,5 +53,18 @@ public class UsersService(
             throw new AccessDeniedException();
         
         throw new NotImplementedException();
+    }
+
+    public Task<PaginatedResponse<Users>> GetUsersTenantAsync(int tenantId, int page, int pageSize, CancellationToken ct)
+    {
+        var users = usersRepository
+            .GetByTenantAsyc(tenantId, ct).Result;
+        var totalCount = users.Count();
+        var items = users
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct).Result;
+
+        return Task.FromResult(new PaginatedResponse<Users>(items, page, pageSize, totalCount));
     }
 }

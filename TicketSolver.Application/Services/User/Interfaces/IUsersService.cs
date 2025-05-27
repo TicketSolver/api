@@ -11,7 +11,15 @@ public interface IUsersService
     Task<IEnumerable<Users>> ListUsersAsync(PaginatedQuery query, CancellationToken cancellationToken);
     Task<Users> CreateUserAsync(Users user, CancellationToken cancellationToken);
     Task<bool> DeleteUserAsync(string userId, AuthenticatedUser authenticatedUser, CancellationToken cancellationToken);
-    
+
     // Criar um Model para edição de user
-    Task<Users> UpdateUserAsync(string userId, Users user, AuthenticatedUser authenticatedUser, CancellationToken cancellationToken);
+    Task<Users> UpdateUserAsync(string userId, Users user, AuthenticatedUser authenticatedUser,
+        CancellationToken cancellationToken);
+
+    Task<PaginatedResponse<Users>> GetUsersTenantAsync(
+        int tenantId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken
+    );
 }

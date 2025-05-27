@@ -12,4 +12,6 @@ public interface IUsersRepository : IRepositoryBase<Users>
     Task<Users> CreateUserAsync(Users user, CancellationToken cancellationToken);
     
     Task<Users> UpdateUserAsync(Users user, CancellationToken cancellationToken);
+    
+    Task<IQueryable<Users>> GetByTenantAsyc(int tenantId, CancellationToken cancellationToken = default);
 }

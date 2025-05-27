@@ -52,4 +52,10 @@ public class UsersRepository(EfContext context) : EFRepositoryBase<Users>(contex
         
         return user;
     }
+
+    public Task<IQueryable<Users>> GetByTenantAsyc(int tenantId, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(GetAll()
+            .Where(u => u.TenantId == tenantId));
+    }
 }

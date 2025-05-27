@@ -73,4 +73,18 @@ public class UsersController(IUsersService usersService) : ShellController
         
         return Ok(ApiResponse.Ok(new {}));
     }
+
+    [HttpGet("tenant/{tenantId:int}/")]
+    public async Task<ActionResult<PaginatedResponse<Users>>> GetUsersByTenant(
+        [FromRoute] int tenantId,
+        [FromQuery] int page,
+        [FromQuery] int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var users = await usersService.GetUsersTenantAsync(tenantId, page, pageSize, cancellationToken);
+        if (users is null || users.Items.Count == 0)
+            return NotFound(ApiResponse.Fail("Nenhum usuário encontrado para o Tenant especificado."));
+        return Ok(ApiResponse.Ok(users));
+    }
+        
 }
