@@ -1,4 +1,6 @@
 using TicketSolver.Application.Services;
+using TicketSolver.Application.Services.admin;
+using TicketSolver.Application.Services.admin.Interfaces;
 using TicketSolver.Application.Services.Chat;
 using TicketSolver.Application.Services.Chat.Interfaces;
 using TicketSolver.Application.Services.Interfaces;
@@ -19,6 +21,8 @@ public static class ConfigureServices
         services.AddTransient<IUsersService, UsersService>();
         services.AddTransient<ITenantsService, TenantsService>();
         services.AddTransient<ITicketsService, TicketsService>();
+        services.AddTransient<IAttachmentsService, AttachmentsService>();
         services.AddTransient<IChatService, ChatService>();
+        services.AddTransient<IAdminStatsService, AdminStatsService>();
     }
 }

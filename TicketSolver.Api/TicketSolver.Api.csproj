@@ -32,6 +32,7 @@
       <ProjectReference Include="..\TicketSolver.Application\TicketSolver.Application.csproj" />
       <ProjectReference Include="..\TicketSolver.Domain\TicketSolver.Domain.csproj" />
       <ProjectReference Include="..\TicketSolver.Infra.EntityFramework\TicketSolver.Infra.EntityFramework.csproj" />
+      <ProjectReference Include="..\TicketSolver.Infra.Storage\TicketSolver.Infra.Storage.csproj" />
     </ItemGroup>
 
 </Project>

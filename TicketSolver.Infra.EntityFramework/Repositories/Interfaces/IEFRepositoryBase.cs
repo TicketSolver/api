@@ -4,7 +4,7 @@ public interface IEFRepositoryBase<TEntity> where TEntity : class
 {
     IQueryable<TEntity> GetAll();
     string GetTenant();
-    IQueryable<TEntity> GetById(int id);
+    IQueryable<TEntity> GetById<TId>(TId id);
     Task<TEntity> GetById(CancellationToken cancellationToken, int id);
 
     Task<TEntity> FindAsync(CancellationToken cancellationToken, int id);

@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Infra.EntityFr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Application", "TicketSolver.Application\TicketSolver.Application.csproj", "{1A4A7ECF-91CD-48C0-8A45-1ED104B04C94}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Infra.Storage", "TicketSolver.Infra.Storage\TicketSolver.Infra.Storage.csproj", "{30ACCCFA-D42E-4488-ABD9-196DEBD749E7}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Infra.GeminiAI", "TicketSolver.Infra.GeminiAI\TicketSolver.Infra.GeminiAI.csproj", "{92985EB1-37CE-41C0-95B5-1031219B6A0E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Application.Tests", "TicketSolver.Application.Tests\TicketSolver.Application.Tests.csproj", "{F3F02593-CA37-4AFA-8747-D93B614C7441}"
@@ -50,6 +52,10 @@ Global
 		{1A4A7ECF-91CD-48C0-8A45-1ED104B04C94}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A4A7ECF-91CD-48C0-8A45-1ED104B04C94}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A4A7ECF-91CD-48C0-8A45-1ED104B04C94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30ACCCFA-D42E-4488-ABD9-196DEBD749E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30ACCCFA-D42E-4488-ABD9-196DEBD749E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30ACCCFA-D42E-4488-ABD9-196DEBD749E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30ACCCFA-D42E-4488-ABD9-196DEBD749E7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{92985EB1-37CE-41C0-95B5-1031219B6A0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{92985EB1-37CE-41C0-95B5-1031219B6A0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92985EB1-37CE-41C0-95B5-1031219B6A0E}.Release|Any CPU.ActiveCfg = Release|Any CPU

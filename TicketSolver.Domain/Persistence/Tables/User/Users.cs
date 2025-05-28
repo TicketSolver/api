@@ -9,8 +9,8 @@ namespace TicketSolver.Domain.Persistence.Tables.User;
 public class Users : IdentityUser
 {
     public string FullName { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
     public short DefUserStatusId { get; set; }
     [ForeignKey("DefUserStatusId")] public DefUserStatus DefUserStatus { get; set; }    

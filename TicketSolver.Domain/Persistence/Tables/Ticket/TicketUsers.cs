@@ -8,6 +8,7 @@ public class TicketUsers : EntityDates
 {
     public int Id { get; set; }
     public DateTime AddedAt { get; set; }
+    public DateTime? FirstResponseAt { get; set; } = null;
 
     public string UserId { get; set; }
     [ForeignKey("UserId")] public Users User { get; set; }

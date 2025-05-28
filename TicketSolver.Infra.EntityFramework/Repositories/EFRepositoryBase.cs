@@ -2,6 +2,9 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using TicketSolver.Domain.Extensions;
+using TicketSolver.Domain.Models;
+using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Infra.EntityFramework.Persistence;
 using TicketSolver.Infra.EntityFramework.Repositories.Interfaces;
 
@@ -22,8 +25,14 @@ public abstract class EFRepositoryBase<TEntity> : IEFRepositoryBase<TEntity> whe
     {
         return DbSet.AsQueryable();
     }
+    
+    public async Task<IEnumerable<TEntity>> ExecuteQueryAsync(IQueryable<TEntity> query,
+        CancellationToken cancellationToken = default)
+    {
+        return await query.ToListAsync(cancellationToken);
+    }
 
-    private IQueryable<TEntity> GetQueryableById(int id)
+    private IQueryable<TEntity> GetQueryableById<TId>(TId id)
     {
         var parameter = Expression.Parameter(typeof(TEntity), "x");
         var property = Expression.Property(parameter, "Id");
@@ -33,7 +42,7 @@ public abstract class EFRepositoryBase<TEntity> : IEFRepositoryBase<TEntity> whe
         return DbSet.Where(lambda).AsQueryable();
     }
 
-    public IQueryable<TEntity> GetById(int id)
+    public IQueryable<TEntity> GetById<TId>(TId id)
     {
         return GetQueryableById(id);
     }
@@ -45,6 +54,21 @@ public abstract class EFRepositoryBase<TEntity> : IEFRepositoryBase<TEntity> whe
         return query.FirstOrDefaultAsync(cancellationToken);
     }
 
+    protected async Task<PaginatedResponse<TEntity>> ToPaginatedResult(CancellationToken cancellationToken,
+        IQueryable<TEntity> query, PaginatedQuery paginatedQuery)
+    {
+        var count = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Paginate(paginatedQuery)
+            .ToListAsync(cancellationToken);
+        
+        return new PaginatedResponse<TEntity>
+        {
+            Count = count,
+            Items = items
+        };
+    }
+    
     public virtual async Task<TEntity?> FindAsync(CancellationToken cancellationToken, int id)
     {
         return await DbSet.FindAsync(id, cancellationToken);

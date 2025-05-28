@@ -94,11 +94,11 @@ public class AuthService(
             DefUserTypeId = (short)eDefUserTypes.Admin,
             TenantId = tenant.Id,
         };
-
+        user.CreatedAt = user.CreatedAt.ToUniversalTime();
+        user.UpdatedAt = user.UpdatedAt.ToUniversalTime();
         var result = await userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
             throw new UserRegistrationException(result.Errors.Select(e => e.Description));
-        
         return user;
     }
 

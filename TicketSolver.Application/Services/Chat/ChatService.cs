@@ -1,4 +1,5 @@
 using GroqNet.ChatCompletions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TicketSolver.Application.Models.Chat;
 using TicketSolver.Application.Services.Chat.Interfaces;
@@ -22,7 +23,8 @@ public class ChatService : IChatService
         IChatRepository chatRepository,
         ITicketsRepository ticketRepository,
         ILogger<ChatService> logger,
-        IChatAiService chatAiService)  
+        IChatAiService chatAiService
+        ITicketUsersRepository ticketUsersRepository)  
     {
         _chatRepository = chatRepository;
         _ticketRepository = ticketRepository;
@@ -59,7 +61,7 @@ public class ChatService : IChatService
         };
 
         var updatedChat = await _chatRepository
-            .AddMessageToChatAsync(request.TicketId, userMessage, cancellationToken);
+            .AddMessageToChatAsync(request.TicketId, message, cancellationToken);
 
         _logger.LogInformation(
             "Mensagem enviada para o ticket {TicketId} por {SenderName}",
@@ -96,8 +98,8 @@ public class ChatService : IChatService
             IsRead        = false
         };
         await _chatRepository.AddMessageToChatAsync(request.TicketId, aiMessage, cancellationToken);
-
-        _logger.LogInformation("IA respondeu no ticket {TicketId}", request.TicketId);
+            logger.LogInformation("Mensagem enviada para o ticket {TicketId} por {SenderName}", request.TicketId, request.SenderName);
+        
 
         // 5) Retorna a DTO da resposta da IA
         return new ChatMessageResponseDto
@@ -332,8 +334,12 @@ public class ChatService : IChatService
             // Implementar lógica de permissão baseada no seu domínio
             // Por exemplo: verificar se o usuário é dono do ticket, técnico responsável, etc.
             
-            var ticket = await _ticketRepository.GetByIdAsync(ticketId);
-            if (ticket == null) return false;
+            var ticketCreatedById = await ticketRepository
+                .GetById(ticketId)
+                .Select(t => t.CreatedById)
+                .FirstOrDefaultAsync(cancellationToken);
+            
+            if (ticketCreatedById == null) return false;
 
             // Admins e técnicos podem acessar qualquer chat
             if (userType.Equals("Admin", StringComparison.OrdinalIgnoreCase) || 
@@ -342,8 +348,8 @@ public class ChatService : IChatService
 
             // Usuários só podem acessar seus próprios tickets
             if (userType.Equals("User", StringComparison.OrdinalIgnoreCase))
-                return ticket.CreatedById.ToString() == userId ||
-                       ticket.AssignedToId.ToString() == userId;;
+                return ticketCreatedById == userId ||
+                       await ticketUsersRepository.IsUserAssignedToTicketAsync(cancellationToken, userId, ticketId);
 
             return false;
         }
