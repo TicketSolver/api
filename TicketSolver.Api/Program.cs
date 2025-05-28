@@ -17,8 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 // registra o HttpClient antes de chamar Startup.Configure
 builder.Services.AddHttpClient<IAiProvider, GeminiProvider>();
     
-builder.Services.AddScoped<IChatAiService,    AiServiceImpl>();
-builder.Services.AddScoped<IChatService,       CoreServiceImpl>();
+builder.Services.AddScoped<IChatAiService,    AiChatService>();
+builder.Services.AddScoped<IChatService,       ChatService>();
 
 // builder.Build() e configura controllers, swagger, etc
 var app = Startup.Configure(builder);

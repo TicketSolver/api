@@ -98,7 +98,7 @@ public class ChatService : IChatService
             IsRead        = false
         };
         await _chatRepository.AddMessageToChatAsync(request.TicketId, aiMessage, cancellationToken);
-            logger.LogInformation("Mensagem enviada para o ticket {TicketId} por {SenderName}", request.TicketId, request.SenderName);
+            _logger.LogInformation("Mensagem enviada para o ticket {TicketId} por {SenderName}", request.TicketId, request.SenderName);
         
 
         // 5) Retorna a DTO da resposta da IA

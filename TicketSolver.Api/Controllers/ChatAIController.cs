@@ -30,8 +30,8 @@ namespace TicketSolver.Api.Controllers
             CancellationToken ct
         )
         {
-            if (string.IsNullOrWhiteSpace(request.Prompt))
-                return BadRequest("O campo 'Prompt' não pode estar vazio.");
+           if (string.IsNullOrWhiteSpace(request.Prompt))
+               return BadRequest(ApiResponse.Fail("O campo 'Prompt' não pode estar vazio."));
 
             // 1) decide ou gera o ConversationId
             var convId = request.ConversationId ?? Guid.NewGuid();
