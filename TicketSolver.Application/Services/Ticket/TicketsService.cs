@@ -17,7 +17,8 @@ namespace TicketSolver.Application.Services.Ticket;
 public class TicketsService(
     ITicketsRepository repo,
     IUsersRepository usersRepo,
-    ITicketUsersRepository ticketUsersRepository
+    ITicketUsersRepository ticketUsersRepository,
+    ITicketsRepository ticketsRepository
 ) : ITicketsService
 {
     public async Task<IEnumerable<TicketShort>> GetAllAsync()
@@ -226,6 +227,25 @@ public class TicketsService(
             })
             .FirstOrDefaultAsync(cancellationToken) ?? new TechnicianCounters();
 
+        return result;
+    }
+
+    public async Task<UserCounters> GetUserCountersAsync(CancellationToken cancellationToken, string userId)
+    {
+        var result = await ticketsRepository.GetAll()
+            .AsNoTracking()
+            .Where(t => t.CreatedById == userId)
+            .GroupBy(t => 1)
+            .Select(g => new UserCounters
+            {
+                Open = g.Count(t => t.SolvedAt == null),
+                InProgress = g.Count(t => t.Status == (short)eDefTicketStatus.InProgress),
+                Resolved = g.Count(t => t.Status == (short)eDefTicketStatus.Resolved),
+                Total = g.Count(),
+            })
+            .FirstOrDefaultAsync(cancellationToken) ?? new UserCounters();
+
+        
         return result;
     }
 
