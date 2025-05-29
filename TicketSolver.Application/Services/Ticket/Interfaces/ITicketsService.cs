@@ -21,6 +21,7 @@ public interface ITicketsService
     Task<PaginatedResponse<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string techId, PaginatedQuery paginatedQuery, bool history = false);
     Task<TechnicianPerformance> GetTechPerformanceAsync(CancellationToken cancellationToken, string techId);
     Task<TechnicianCounters> GetTechCountersAsync(CancellationToken cancellationToken, string techId);
+    Task<UserCounters> GetUserCountersAsync(CancellationToken cancellationToken, string user);
     Task<string> GetCountsasync(string id);
     Task<IEnumerable<Tickets>> GetLatestUserAsync(string id);
     Task<IEnumerable<Tickets>> GetLatestTechAsync(string id);
