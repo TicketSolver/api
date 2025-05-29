@@ -35,7 +35,7 @@ public class S3FileStorageService : FileStorageServiceBase, IFileStorageService
 
         await _transferUtility.UploadAsync(request, cancellationToken: cancellationToken);
 
-        var url = $"https://{_settings.BucketName}.s3.{_settings.Region}.amazonaws.com/{fileUploadRequest.FileName}";
+        var url = $"https://{_settings.BucketName}.s3.{_settings.Region}.amazonaws.com/{request.Key}";
 
         return new FileUploadResult
         {

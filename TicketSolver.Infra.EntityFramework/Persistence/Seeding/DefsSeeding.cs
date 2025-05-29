@@ -51,7 +51,7 @@ public static class DefsSeeding
     
     private static async Task SeedTicketCategoriesAsync(EfContext context)
     {
-        // if (await context.DefTicketCategories.AnyAsync()) return;
+        if (await context.DefTicketCategories.AnyAsync()) return;
 
         List<DefTicketCategories> defTicketCategories =
         [

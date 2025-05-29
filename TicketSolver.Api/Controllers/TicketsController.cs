@@ -37,12 +37,7 @@ public class TicketsController(ITicketsService service) : ShellController
     [Authorize(Roles = "1,3")]
     public async Task<ActionResult<Tickets>> PostTicket(TicketDTO ticket)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId is null)
-        {
-            return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
-        }
-        var created = await service.CreateAsync(ticket,userId);
+        var created = await service.CreateAsync(ticket, AuthenticatedUser.UserId);
         return Ok(ApiResponse.Ok(CreatedAtAction(nameof(GetTicket),
             new { id = created.Id }, created)));
     }

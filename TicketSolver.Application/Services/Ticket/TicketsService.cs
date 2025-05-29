@@ -50,17 +50,24 @@ public class TicketsService(
     }
 
 
-    public Task<Tickets?> GetByIdAsync(int id) => repo.GetByIdAsync(id);
+    public Task<Tickets?> GetByIdAsync(int id) {
+        return repo.GetById(id)
+            .AsNoTracking()
+            .Select(t => new Tickets(t))
+            .FirstOrDefaultAsync();
+    }
 
     public async Task<Tickets> CreateAsync(TicketDTO ticket, string userId)
     {
-        Tickets t = new Tickets();
+        var t = new Tickets();
         t.CreatedById = userId;
         t.Title = ticket.Title;
         t.Description = ticket.Description;
         t.Status = ticket.Status;
         t.DefTicketPriorityId = ticket.Priority;
         t.DefTicketCategoryId = ticket.Category;
+        t.Status = (short)eDefTicketStatus.New;
+        t.DefUserSatisfactionId = (short)eDefUserSatisfaction.Neutral;
         t.CreatedAt = DateTime.UtcNow;
         t.UpdatedAt = DateTime.UtcNow;
         return await repo.AddAsync(t);
