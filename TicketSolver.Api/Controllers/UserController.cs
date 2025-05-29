@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TicketSolver.Api.Exceptions;
 using TicketSolver.Api.Models;
 using TicketSolver.Application.Exceptions.Users;
+using TicketSolver.Application.Models.User;
 using TicketSolver.Application.Services.User.Interfaces;
 using TicketSolver.Domain.Enums;
 using TicketSolver.Domain.Models;
@@ -56,20 +57,39 @@ public class UsersController(IUsersService usersService) : ShellController
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> PatchUser(string id, Users body, CancellationToken cancellationToken)
+    public async Task<IActionResult> PatchUser(string id, UserPatchDto body, CancellationToken cancellationToken)
     {
-        var user = await usersService.UpdateUserAsync(id, body, AuthenticatedUser, cancellationToken);
-        
-        return Ok(ApiResponse.Ok(user));
+        try
+        {
+            var user = await usersService.UpdateUserAsync(id, body, AuthenticatedUser, cancellationToken);
+
+            return Ok(ApiResponse.Ok(user));
+        }
+        catch (Exception e)
+        {
+            return BadRequest(
+                ApiResponse.Fail("Erro ao atualizar usuário: " + e.Message));
+        }
     }
     
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteUser(string id)
+    public async Task<IActionResult> DeleteUser(string id, CancellationToken cancellationToken)
     {
         if (AuthenticatedUser.UserId != id && AuthenticatedUser.DefUserType != eDefUserTypes.Admin)
             throw new ForbiddenException("Você não possui permissão para editar este usuário!");
-        
-        // usersService.DeleteUserAsync
+        try
+        {
+            var userExists = await usersService.GetUserByIdAsync(id, cancellationToken);
+            if (userExists is null)
+                return NotFound(ApiResponse.Fail("Usuário não encontrado."));
+            var user = await usersService.DeleteUserAsync(id, AuthenticatedUser, cancellationToken);
+            if (!user)
+                return BadRequest(ApiResponse.Fail("Erro ao deletar usuário."));
+        }
+        catch (UserNotFoundException)
+        {
+            return NotFound(ApiResponse.Fail("Usuário não encontrado."));
+        }
         
         return Ok(ApiResponse.Ok(new {}));
     }
@@ -81,6 +101,11 @@ public class UsersController(IUsersService usersService) : ShellController
         [FromQuery] int pageSize,
         CancellationToken cancellationToken)
     {
+        if (pageSize <= 0 || page <= 0)
+        {
+            pageSize = 10;
+            page = 1;
+        }
         var users = await usersService.GetUsersTenantAsync(tenantId, page, pageSize, cancellationToken);
         if (users is null || users.Items.Count == 0)
             return NotFound(ApiResponse.Fail("Nenhum usuário encontrado para o Tenant especificado."));
