@@ -77,6 +77,8 @@ public class UsersController(IUsersService usersService) : ShellController
     {
         if (AuthenticatedUser.UserId != id && AuthenticatedUser.DefUserType != eDefUserTypes.Admin)
             throw new ForbiddenException("Você não possui permissão para editar este usuário!");
+        if(AuthenticatedUser.UserId == id && AuthenticatedUser.DefUserType == eDefUserTypes.Admin)
+            throw new ForbiddenException("Você não pode deletar o seu próprio usuário!");
         try
         {
             var userExists = await usersService.GetUserByIdAsync(id, cancellationToken);
