@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GroqNet;
 using System.Security.Claims;
+using GroqNet.ChatCompletions;
 using TicketSolver.Api.Models;
 using TicketSolver.Application.Models.Chat;
 using TicketSolver.Application.Services.Chat.Interfaces;
