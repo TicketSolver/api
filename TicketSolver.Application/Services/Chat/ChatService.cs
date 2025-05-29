@@ -319,36 +319,38 @@ public class ChatService(
     {
         try
         {
-            // Implementar lógica de permissão baseada no seu domínio
-            // Por exemplo: verificar se o usuário é dono do ticket, técnico responsável, etc.
+            var isAdmin      = userType == "1";
+            var isTech       = userType == "2";
+            var isRegular    = userType == "3";
 
-            var ticketCreatedById = await ticketUsersRepository
-                .GetById(ticketId)
-                .Select(t => t.User).Where(u => u.Id == userId)
-                .FirstOrDefaultAsync(cancellationToken);
-            
-            if (ticketCreatedById == null) return false;
-            
-            var user = await ticketUsersRepository.IsUserAssignedToTicketAsync(cancellationToken,userId,ticketId);
-            
-            // Admins e técnicos podem acessar qualquer chat
-            if (userType.Equals("Admin", StringComparison.OrdinalIgnoreCase) || 
-                userType.Equals("Technician", StringComparison.OrdinalIgnoreCase))
+            if (isAdmin || isTech)
                 return true;
 
-            // Usuários só podem acessar seus próprios tickets
-            if (userType.Equals("User", StringComparison.OrdinalIgnoreCase))
-                return ticketCreatedById.Id == userId ||
-                       await ticketUsersRepository.IsUserAssignedToTicketAsync(cancellationToken, userId, ticketId);
+            // usuário comum só se for dono ou estiver atribuído
+            if (isRegular)
+            {
+                var createdBy = await ticketRepository
+                    .GetByIdAsync(ticketId);
+                if (createdBy == null) 
+                    return false;
+
+                if (createdBy.CreatedById == userId) 
+                    return true;
+
+                // ou se está atribuído
+                return await ticketUsersRepository
+                    .IsUserAssignedToTicketAsync(cancellationToken, userId, ticketId);
+            }
 
             return false;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Erro ao verificar permissão de acesso ao chat do ticket {TicketId} para o usuário {UserId}", ticketId, userId);
+            logger.LogError(ex, "…");
             return false;
         }
     }
+
 
     public async Task<IEnumerable<ChatMessageDto>> SearchMessagesAsync(ChatSearchRequestDto request, CancellationToken cancellationToken = default)
     {

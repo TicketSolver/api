@@ -58,7 +58,8 @@ public class TicketsService(
         t.CreatedById = userId;
         t.Title = ticket.Title;
         t.Description = ticket.Description;
-        t.Status = ticket.Status;
+        t.DefUserSatisfactionId = 1;
+        t.Status = (short)eDefTicketStatus.New;
         t.DefTicketPriorityId = ticket.Priority;
         t.DefTicketCategoryId = ticket.Category;
         t.CreatedAt = DateTime.UtcNow;

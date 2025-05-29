@@ -1,8 +1,10 @@
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GroqNet;
 using System.Security.Claims;
 using GroqNet.ChatCompletions;
+using Microsoft.AspNetCore.Http.HttpResults;
 using TicketSolver.Api.Models;
 using TicketSolver.Application.Models.Chat;
 using TicketSolver.Application.Services.Chat.Interfaces;
@@ -73,7 +75,7 @@ public class ChatController : ShellController
         }
 
         if (!await _chatService.CanAccessChatAsync(request.TicketId, userId, userRole ?? "User", cancellationToken))
-            return Forbid(ApiResponse.Fail("Acesso negado ao chat deste ticket.").ToString());
+            return BadRequest((ApiResponse.Fail("Acesso negado ao chat deste ticket.")));
 
         request.SenderId   = userId;
         request.SenderName = userName ?? "Usuário";
@@ -109,14 +111,14 @@ public class ChatController : ShellController
         CancellationToken cancellationToken = default
     )
     {
-        var userId   = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = AuthenticatedUser.UserId;
         var userType = User.FindFirstValue(ClaimTypes.Role);
 
         if (userId is null)
             return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
 
         if (!await _chatService.CanAccessChatAsync(ticketId, userId, userType ?? "User", cancellationToken))
-            return Forbid(ApiResponse.Fail("Acesso negado ao chat deste ticket.").ToString());
+            return BadRequest((ApiResponse.Fail("Acesso negado ao chat deste ticket.")));
 
         try
         {
@@ -166,14 +168,14 @@ public class ChatController : ShellController
         CancellationToken cancellationToken = default
     )
     {
-        var userId   = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = AuthenticatedUser.UserId;
         var userType = User.FindFirstValue(ClaimTypes.Role);
 
         if (userId is null)
             return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
 
         if (!await _chatService.CanAccessChatAsync(ticketId, userId, userType ?? "User", cancellationToken))
-            return Forbid(ApiResponse.Fail("Acesso negado ao chat deste ticket.").ToString());
+            return BadRequest((ApiResponse.Fail("Acesso negado ao chat deste ticket.")));
 
         try
         {

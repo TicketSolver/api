@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GroqNet;
 using GroqNet.ChatCompletions;
+using Microsoft.AspNetCore.Authorization;
 using TicketSolver.Api.Models;
 using TicketSolver.Application.Services.ChatAI.Interface;
 
@@ -13,7 +14,7 @@ namespace TicketSolver.Api.Controllers
 {
     [ApiController]
     [Route("api/chat")]
-    public class ChatAiController : ControllerBase
+    public class ChatAiController : ShellController
     {
         private readonly IChatAiService _chatService;
 
@@ -23,8 +24,10 @@ namespace TicketSolver.Api.Controllers
 
         public ChatAiController(IChatAiService chatService)
             => _chatService = chatService;
-
+        
+        
         [HttpPost("ask")]
+        [Authorize(Roles = "1,2,3")]       
         public async Task<IActionResult> Ask(
             [FromBody] ChatRequest request,
             CancellationToken ct
