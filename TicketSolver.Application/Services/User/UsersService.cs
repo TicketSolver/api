@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models.Auth;
+using TicketSolver.Application.Models.User;
 using TicketSolver.Application.Services.User.Interfaces;
 using TicketSolver.Domain.Enums;
 using TicketSolver.Domain.Extensions;
@@ -43,16 +44,45 @@ public class UsersService(
     {
         if (authenticatedUser.DefUserType != eDefUserTypes.Admin)
             throw new AccessDeniedException();
-
-        throw new NotImplementedException();
+        try
+        {
+            var user = usersRepository.GetById(userId)
+                .FirstOrDefault();
+            if (user is null)
+                throw new UserNotFoundException();
+            var status = usersRepository.DeleteAsync(cancellationToken, user);
+            if (!status.Result)
+                throw new Exception("Erro ao deletar usuário");
+            return status;
+        }
+        catch (Exception e)
+        {
+            throw new Exception("Erro ao deletar usuário", e);
+        }
     }
 
-    public Task<Users> UpdateUserAsync(string userId, Users user, AuthenticatedUser authenticatedUser, CancellationToken cancellationToken)
+    public Task<Users> UpdateUserAsync(string userId, UserPatchDto user, AuthenticatedUser authenticatedUser, CancellationToken cancellationToken)
     {
         if (authenticatedUser.UserId != userId && authenticatedUser.DefUserType != eDefUserTypes.Admin)
             throw new AccessDeniedException();
-        
-        throw new NotImplementedException();
+        if (user is null)
+            throw new ArgumentNullException(nameof(user));
+        var patchuser = usersRepository.GetById(userId)
+            .FirstOrDefault();
+        if (patchuser is null)
+            throw new UserNotFoundException();
+        if (user.FullName != null) patchuser.FullName = user.FullName;
+        patchuser.DefUserTypeId = (short)user.DefUserTypeId!;
+        patchuser.TicketUsers = [];
+        patchuser.UpdatedAt = DateTime.UtcNow;
+        try
+        {
+            return usersRepository.UpdateUserAsync(patchuser, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            throw new Exception("Erro ao atualizar usuário", e);
+        }
     }
 
     public Task<PaginatedResponse<Users>> GetUsersTenantAsync(int tenantId, int page, int pageSize, CancellationToken ct)
