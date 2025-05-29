@@ -200,28 +200,38 @@ public class TicketsController(ITicketsService service) : ShellController
         
         return Ok(ApiResponse.Ok("","Status atualizado com sucesso!"));
     }
-    
-     [HttpPut("{id:int}/assign/")]
-        public async Task<IActionResult> AssignTicketToTech(int id, CancellationToken cancellationToken)
-        {
-            var  techId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (techId is null)
-            {
-                return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
-            }
 
-            try
-            {
-                var ok = await service.AssignedTechTicketAsync(cancellationToken, id, techId);
-                if (!ok)
-                    return BadRequest(ApiResponse.Fail("Ticket ou técnico não encontrado (IDs inválidos)."));
-                return Ok(ApiResponse.Ok("","Ticket atribuído com sucesso!"));
-            }
-            catch (TicketException e)
-            {
-                return BadRequest(ApiResponse.Fail(e.Message));
-            }
+    [HttpPut("{id:int}/assign/")]
+    public async Task<IActionResult> AssignTicketToTech(int id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var ok = await service.AssignedTechTicketAsync(cancellationToken, id, AuthenticatedUser.UserId);
+            if (!ok)
+                return BadRequest(ApiResponse.Fail("Ticket ou técnico não encontrado (IDs inválidos)."));
+            return Ok(ApiResponse.Ok("", "Ticket atribuído com sucesso!"));
         }
+        catch (TicketException e)
+        {
+            return BadRequest(ApiResponse.Fail(e.Message));
+        }
+    }
+    
+    [HttpPut("{id:int}/users/")]
+    public async Task<IActionResult> GetTicketUsers(int id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var ok = await service.AssignedTechTicketAsync(cancellationToken, id, AuthenticatedUser.UserId);
+            if (!ok)
+                return BadRequest(ApiResponse.Fail("Ticket ou técnico não encontrado (IDs inválidos)."));
+            return Ok(ApiResponse.Ok("", "Ticket atribuído com sucesso!"));
+        }
+        catch (TicketException e)
+        {
+            return BadRequest(ApiResponse.Fail(e.Message));
+        }
+    }
 
         [HttpGet("counts/")]
         public async Task<IActionResult> GetCounts()

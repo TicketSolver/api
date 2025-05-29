@@ -118,6 +118,19 @@ public class TicketsService(
         return true;
     }
 
+    public async Task<List<AssignedUser>> GetTicketUsersAsync(CancellationToken cancellationToken, int id)
+    {
+        return await ticketUsersRepository.GetAll()
+            .AsNoTracking()
+            .Where(tu => tu.TicketId == id)
+            .Select(tu => new AssignedUser
+            {
+                Id = tu.Id,
+                User = new UserDto(tu.UserId, tu.User.Email, tu.User.FullName),
+            })
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<bool> UpdateTicketStatusAsync(int id, short status)
     {
         var existing = await repo.GetByIdAsync(id);
