@@ -22,9 +22,17 @@
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.Design" Version="1.1.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="8.0.0" />
     </ItemGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\TicketSolver.Infra.GeminiAI\TicketSolver.Infra.GeminiAI.csproj" />
+    </ItemGroup>
+
 
     <ItemGroup>
+      <ProjectReference Include="..\TicketSolver.Application\TicketSolver.Application.csproj" />
       <ProjectReference Include="..\TicketSolver.Domain\TicketSolver.Domain.csproj" />
+      <ProjectReference Include="..\TicketSolver.Infra.EntityFramework\TicketSolver.Infra.EntityFramework.csproj" />
+      <ProjectReference Include="..\TicketSolver.Infra.Storage\TicketSolver.Infra.Storage.csproj" />
     </ItemGroup>
 
 </Project>
