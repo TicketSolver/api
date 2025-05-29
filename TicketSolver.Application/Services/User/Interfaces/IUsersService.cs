@@ -1,5 +1,6 @@
 ﻿using TicketSolver.Application.Models;
 using TicketSolver.Application.Models.Auth;
+using TicketSolver.Application.Models.User;
 using TicketSolver.Domain.Models;
 using TicketSolver.Domain.Persistence.Tables.User;
 
@@ -13,7 +14,7 @@ public interface IUsersService
     Task<bool> DeleteUserAsync(string userId, AuthenticatedUser authenticatedUser, CancellationToken cancellationToken);
 
     // Criar um Model para edição de user
-    Task<Users> UpdateUserAsync(string userId, Users user, AuthenticatedUser authenticatedUser,
+    Task<Users> UpdateUserAsync(string userId, UserPatchDto user, AuthenticatedUser authenticatedUser,
         CancellationToken cancellationToken);
 
     Task<PaginatedResponse<Users>> GetUsersTenantAsync(

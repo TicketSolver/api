@@ -91,8 +91,8 @@ public class TicketsController(ITicketsService service) : ShellController
         }
     }
 
-    [HttpGet("technician/{userId}/performance")]
-    public async Task<ActionResult<TechnicianPerformance>> GetTechnicianPerformanceAsync(CancellationToken cancellationToken, string userId)
+    [HttpGet("technician/performance")]
+    public async Task<ActionResult<TechnicianPerformance>> GetTechnicianPerformanceAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -109,8 +109,8 @@ public class TicketsController(ITicketsService service) : ShellController
         }
     }
     
-    [HttpGet("technician/{userId}/counters")]
-    public async Task<ActionResult<TechnicianCounters>> GetTechnicianCountersAsync(CancellationToken cancellationToken, string userId)
+    [HttpGet("technician/counters")]
+    public async Task<ActionResult<TechnicianCounters>> GetTechnicianCountersAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -147,7 +147,7 @@ public class TicketsController(ITicketsService service) : ShellController
     }
     
     [HttpGet("user/")]
-    public async Task<IActionResult> GetAllByUser(CancellationToken cancellationToken, PaginatedQuery paginatedQuery){
+    public async Task<IActionResult> GetAllByUser(CancellationToken cancellationToken, [FromQuery] PaginatedQuery paginatedQuery){
         try
         {
             var tickets = await service.GetAllByUserAsync(cancellationToken, AuthenticatedUser.UserId, paginatedQuery);
@@ -163,8 +163,26 @@ public class TicketsController(ITicketsService service) : ShellController
         }
     }
     
+    [HttpGet("user/counters")]
+    public async Task<ActionResult<TechnicianCounters>> GetUserCountersAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var performance = await service.GetUserCountersAsync(cancellationToken, AuthenticatedUser.UserId);
+            return Ok(ApiResponse.Ok(performance));
+        }
+        catch (UserNotFoundException)
+        {
+            throw new NotFoundException("Usuário não encontrado!");
+        }
+        catch (TicketException ex)
+        {
+            return NotFound(ApiResponse.Fail(ex.Message));
+        }
+    }
+    
     [HttpGet("user/{id}/")]
-    public async Task<IActionResult> GetAllByUser(CancellationToken cancellationToken, string id, PaginatedQuery paginatedQuery){
+    public async Task<IActionResult> GetAllByUser(CancellationToken cancellationToken, string id, [FromQuery] PaginatedQuery paginatedQuery){
         try
         {
             var tickets = await service.GetAllByUserAsync(cancellationToken, id, paginatedQuery);
