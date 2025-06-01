@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TicketSolver.Application.Exceptions.Ticket;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Ticket;
 using TicketSolver.Infra.EntityFramework.Persistence;
@@ -19,5 +20,15 @@ public class TicketUsersRepository(EfContext context) : EFRepositoryBase<TicketU
     {
         return GetAll()
             .Where(tu => tu.UserId == userId);
+    }
+
+    public async Task UnassignUserToTicketAsync(CancellationToken cancellationToken, string userId, int ticketId)
+    {
+        var ticketUser = await GetByUserId(userId)
+            .Where(tu => tu.TicketId == ticketId)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        if (ticketUser == 0)
+            throw new TicketException("Usuário não vinculado ao ticket");
     }
 }

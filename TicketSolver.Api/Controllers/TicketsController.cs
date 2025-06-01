@@ -9,27 +9,25 @@ using TicketSolver.Application.Exceptions.Ticket;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models;
 using TicketSolver.Application.Models.User;
+using TicketSolver.Domain.Enums;
 using TicketSolver.Domain.Models;
 
 namespace TicketSolver.Api.Controllers;
 
 [ApiController]
 public class TicketsController(ITicketsService service) : ShellController
-{   
-    
+{
     [HttpGet]
     [Authorize(Roles = "1")]
     public async Task<ActionResult<IEnumerable<Tickets>>> GetTickets()
         => Ok(await service.GetAllAsync());
 
-    
+
     [HttpGet("{id}/")]
     public async Task<ActionResult<Tickets>> GetTicket(int id)
     {
         var t = await service.GetByIdAsync(id);
-        return t is not null ? 
-            Ok(ApiResponse.Ok(t)) : 
-            NotFound(ApiResponse.Fail("Ticket não encontrado!"));
+        return t is not null ? Ok(ApiResponse.Ok(t)) : NotFound(ApiResponse.Fail("Ticket não encontrado!"));
     }
 
 
@@ -53,7 +51,7 @@ public class TicketsController(ITicketsService service) : ShellController
         }
         catch (TicketException ex)
         {
-           return NotFound(ApiResponse.Fail(ex.Message));
+            return NotFound(ApiResponse.Fail(ex.Message));
         }
     }
 
@@ -69,11 +67,13 @@ public class TicketsController(ITicketsService service) : ShellController
 
 
     [HttpGet("technician/")]
-    public async Task<ActionResult<PaginatedResponse<Tickets>>> GetAllByTech(CancellationToken cancellationToken, [FromQuery] PaginatedQuery paginatedQuery, [FromQuery] bool history)
+    public async Task<ActionResult<PaginatedResponse<Tickets>>> GetAllByTech(CancellationToken cancellationToken,
+        [FromQuery] PaginatedQuery paginatedQuery, [FromQuery] bool history)
     {
         try
         {
-            var tickets = await service.GetAllByTechAsync(cancellationToken, AuthenticatedUser.UserId, paginatedQuery, history);
+            var tickets =
+                await service.GetAllByTechAsync(cancellationToken, AuthenticatedUser.UserId, paginatedQuery, history);
             return Ok(ApiResponse.Ok(tickets));
         }
         catch (UserNotFoundException)
@@ -87,7 +87,8 @@ public class TicketsController(ITicketsService service) : ShellController
     }
 
     [HttpGet("technician/performance")]
-    public async Task<ActionResult<TechnicianPerformance>> GetTechnicianPerformanceAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<TechnicianPerformance>> GetTechnicianPerformanceAsync(
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -103,7 +104,7 @@ public class TicketsController(ITicketsService service) : ShellController
             return NotFound(ApiResponse.Fail(ex.Message));
         }
     }
-    
+
     [HttpGet("technician/counters")]
     public async Task<ActionResult<TechnicianCounters>> GetTechnicianCountersAsync(CancellationToken cancellationToken)
     {
@@ -121,9 +122,10 @@ public class TicketsController(ITicketsService service) : ShellController
             return NotFound(ApiResponse.Fail(ex.Message));
         }
     }
-    
+
     [HttpGet("technician/{techId}/")]
-    public async Task<ActionResult<PaginatedResponse<Tickets>>> GetAllByTech(string techId, CancellationToken cancellationToken, [FromQuery] PaginatedQuery paginatedQuery, [FromQuery] bool history)
+    public async Task<ActionResult<PaginatedResponse<Tickets>>> GetAllByTech(string techId,
+        CancellationToken cancellationToken, [FromQuery] PaginatedQuery paginatedQuery, [FromQuery] bool history)
     {
         try
         {
@@ -138,11 +140,12 @@ public class TicketsController(ITicketsService service) : ShellController
         {
             return NotFound(ApiResponse.Fail(ex.Message));
         }
-        
     }
-    
+
     [HttpGet("user/")]
-    public async Task<IActionResult> GetAllByUser(CancellationToken cancellationToken, [FromQuery] PaginatedQuery paginatedQuery){
+    public async Task<IActionResult> GetAllByUser(CancellationToken cancellationToken,
+        [FromQuery] PaginatedQuery paginatedQuery)
+    {
         try
         {
             var tickets = await service.GetAllByUserAsync(cancellationToken, AuthenticatedUser.UserId, paginatedQuery);
@@ -157,7 +160,7 @@ public class TicketsController(ITicketsService service) : ShellController
             return NotFound(ApiResponse.Fail(ex.Message));
         }
     }
-    
+
     [HttpGet("user/counters")]
     public async Task<ActionResult<TechnicianCounters>> GetUserCountersAsync(CancellationToken cancellationToken)
     {
@@ -175,38 +178,41 @@ public class TicketsController(ITicketsService service) : ShellController
             return NotFound(ApiResponse.Fail(ex.Message));
         }
     }
-    
+
     [HttpGet("user/{id}/")]
-    public async Task<IActionResult> GetAllByUser(CancellationToken cancellationToken, string id, [FromQuery] PaginatedQuery paginatedQuery){
+    public async Task<IActionResult> GetAllByUser(CancellationToken cancellationToken, string id,
+        [FromQuery] PaginatedQuery paginatedQuery)
+    {
         try
         {
             var tickets = await service.GetAllByUserAsync(cancellationToken, id, paginatedQuery);
             if (tickets is not null)
                 return Ok(ApiResponse.Ok(tickets));
-            return NotFound(ApiResponse.Ok(new {},"Nenhum ticket encontrado"));
+            return NotFound(ApiResponse.Ok(new { }, "Nenhum ticket encontrado"));
         }
         catch (TicketException ex)
         {
             return NotFound(ApiResponse.Fail(ex.Message));
         }
     }
-    
+
     [HttpPut("{id:int}/status/{status}/")]
     public async Task<ActionResult> UpdateTicketStatus(int id, short status)
-    {   
+    {
         var ok = await service.UpdateTicketStatusAsync(id, status);
         if (!ok)
             return BadRequest(new { message = "ID inválido, status fora do intervalo (0–3) ou ticket não existe." });
-        
-        return Ok(ApiResponse.Ok("","Status atualizado com sucesso!"));
+
+        return Ok(ApiResponse.Ok("", "Status atualizado com sucesso!"));
     }
 
-    [HttpPut("{id:int}/assign/")]
-    public async Task<IActionResult> AssignTicketToTech(int id, CancellationToken cancellationToken)
+    [HttpPut("{ticketId:int}/assign/users")]
+    public async Task<IActionResult> AssignTicketToTech([FromRoute] int ticketId, [FromBody] List<string> userIds,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var ok = await service.AssignedTechTicketAsync(cancellationToken, id, AuthenticatedUser.UserId);
+            var ok = await service.AssignedTechTicketAsync(cancellationToken, ticketId, userIds.ToHashSet());
             if (!ok)
                 return BadRequest(ApiResponse.Fail("Ticket ou técnico não encontrado (IDs inválidos)."));
             return Ok(ApiResponse.Ok("", "Ticket atribuído com sucesso!"));
@@ -217,14 +223,13 @@ public class TicketsController(ITicketsService service) : ShellController
         }
     }
     
-    [HttpPut("{id:int}/users/")]
-    public async Task<IActionResult> GetTicketUsers(int id, CancellationToken cancellationToken)
+    [HttpPatch("{ticketId:int}/unassign/{userId}")]
+    public async Task<IActionResult> AssignTicketToTech([FromRoute] int ticketId, [FromRoute] string userId,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var ok = await service.AssignedTechTicketAsync(cancellationToken, id, AuthenticatedUser.UserId);
-            if (!ok)
-                return BadRequest(ApiResponse.Fail("Ticket ou técnico não encontrado (IDs inválidos)."));
+            await service.UnassignTechAsync(cancellationToken, ticketId, userId);
             return Ok(ApiResponse.Ok("", "Ticket atribuído com sucesso!"));
         }
         catch (TicketException e)
@@ -233,97 +238,125 @@ public class TicketsController(ITicketsService service) : ShellController
         }
     }
 
-        [HttpGet("counts/")]
-        public async Task<IActionResult> GetCounts()
+    [HttpGet("{ticketId:int}/users/")]
+    public async Task<IActionResult> GetTicketUsers(int ticketId, CancellationToken cancellationToken)
+    {
+        try
         {
-            var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var role = User.FindFirstValue(ClaimTypes.Role);
-            if ((id is null) || (role is null))
+            var result = await service.GetTicketUsersAsync(cancellationToken, ticketId);
+            return Ok(ApiResponse.Ok(result));
+        }
+        catch (TicketException e)
+        {
+            return BadRequest(ApiResponse.Fail(e.Message));
+        }
+    }
+
+    [HttpGet("{ticketId:int}/users/available")]
+    public async Task<IActionResult> GetAvailableTicketUsers(int ticketId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await service.GetAvailableTicketUsersAsync(cancellationToken, ticketId);
+            return Ok(ApiResponse.Ok(result));
+        }
+        catch (TicketException e)
+        {
+            return BadRequest(ApiResponse.Fail(e.Message));
+        }
+    }
+
+    [HttpGet("counts/")]
+    public async Task<IActionResult> GetCounts()
+    {
+        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        if ((id is null) || (role is null))
+        {
+            return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
+        }
+
+        if (AuthenticatedUser.DefUserType == eDefUserTypes.Technician)
+        {
+            try
             {
-                return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
+                var counts = await service.GetCountsasync(id);
+                if (string.IsNullOrEmpty(counts))
+                {
+                    return NotFound(ApiResponse.Fail("Tecnico {id} não encontrado ou sem tickets. "));
+                }
+
+                return Ok(ApiResponse.Ok(counts));
             }
-
-            if (role == "Technician")
+            catch (TicketException ex)
             {
-                try
-                {
-                    var counts = await service.GetCountsasync(id);
-                    if (string.IsNullOrEmpty(counts))
-                    {
-                        return NotFound(ApiResponse.Fail("Tecnico {id} não encontrado ou sem tickets. "));
-                    }
-                    return Ok(ApiResponse.Ok(counts));
-                }
-                catch (TicketException ex)
-                {
-                    return NotFound(ApiResponse.Fail(ex.Message));
-                }
-               
-            }
-
-            if (role is not ("User" or "Admin")) return BadRequest(ApiResponse.Fail("Erro ao realizar contagem."));
-            {
-                try
-                {
-                    var counts = await service.GetCountsasync(id);
-                    if (string.IsNullOrEmpty(counts))
-                    {
-                        return NotFound(new { message = $"Usuário {id} não encontrado ou sem tickets." });
-                    }
-
-                    return Ok(ApiResponse.Ok(counts));
-                }
-                catch (TicketException ex)
-                {
-                    return BadRequest(ApiResponse.Fail(ex.Message));
-                }
+                return NotFound(ApiResponse.Fail(ex.Message));
             }
         }
 
-        [HttpGet("latest/")]
-        public async Task<IActionResult> GetLatest()
+        if (role is not ("User" or "Admin"))
+            return BadRequest(ApiResponse.Fail("Erro ao realizar contagem."));
+
+        try
         {
-            var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var role = User.FindFirstValue(ClaimTypes.Role);
-            if ((id is null) || (role is null))
+            var counts = await service.GetCountsasync(id);
+            if (string.IsNullOrEmpty(counts))
             {
-                return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
+                return NotFound(new { message = $"Usuário {id} não encontrado ou sem tickets." });
             }
 
-            if (role == "Technician")
+            return Ok(ApiResponse.Ok(counts));
+        }
+        catch (TicketException ex)
+        {
+            return BadRequest(ApiResponse.Fail(ex.Message));
+        }
+    }
+
+    [HttpGet("latest/")]
+    public async Task<IActionResult> GetLatest()
+    {
+        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        if ((id is null) || (role is null))
+        {
+            return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
+        }
+
+        if (role == "Technician")
+        {
+            try
             {
-                try
+                var tickets = await service.GetLatestTechAsync(id);
+                if (tickets is null)
                 {
-                    var tickets = await service.GetLatestTechAsync(id);
-                    if (tickets is null)
-                    {
-                        return NotFound(ApiResponse.Fail("Tecnico {id} não encontrado ou sem tickets. "));
-                    }
-                    return Ok(ApiResponse.Ok(tickets));
+                    return NotFound(ApiResponse.Fail("Tecnico {id} não encontrado ou sem tickets. "));
                 }
-                catch (TicketException ex)
-                {
-                    return NotFound(ApiResponse.Fail(ex.Message));
-                }
+
+                return Ok(ApiResponse.Ok(tickets));
             }
-
-            if (role is not ("User" or "Admin")) return BadRequest(ApiResponse.Fail("Erro ao buscar ultimo ticket."));
+            catch (TicketException ex)
             {
-                try
-                {
-                    var tickets = await service.GetLatestUserAsync(id) ?? [];
-                    if (tickets is null)
-                    {
-                        return NotFound(new { message = $"Usuário {id} não encontrado ou sem tickets." });
-                    }
-
-                    return Ok(ApiResponse.Ok(tickets));
-                }
-                catch (TicketException ex)
-                {
-                    return BadRequest(ApiResponse.Fail(ex.Message));
-                }
+                return NotFound(ApiResponse.Fail(ex.Message));
             }
         }
-        
+
+        if (role is not ("User" or "Admin")) return BadRequest(ApiResponse.Fail("Erro ao buscar ultimo ticket."));
+        {
+            try
+            {
+                var tickets = await service.GetLatestUserAsync(id) ?? [];
+                if (tickets is null)
+                {
+                    return NotFound(new { message = $"Usuário {id} não encontrado ou sem tickets." });
+                }
+
+                return Ok(ApiResponse.Ok(tickets));
+            }
+            catch (TicketException ex)
+            {
+                return BadRequest(ApiResponse.Fail(ex.Message));
+            }
+        }
+    }
 }

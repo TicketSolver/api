@@ -50,7 +50,8 @@ public class TicketsService(
     }
 
 
-    public Task<Tickets?> GetByIdAsync(int id) {
+    public Task<Tickets?> GetByIdAsync(int id)
+    {
         return repo.GetById(id)
             .AsNoTracking()
             .Select(t => new Tickets(t))
@@ -132,6 +133,15 @@ public class TicketsService(
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<List<UserDto>> GetAvailableTicketUsersAsync(CancellationToken cancellationToken, int ticketId)
+    {
+        return await usersRepo.GetAll()
+            .AsNoTracking()
+            .Where(u => u.TicketUsers.All(tu => tu.TicketId != ticketId))
+            .Select(u => new UserDto(u.Id, u.Email, u.FullName))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<bool> UpdateTicketStatusAsync(int id, short status)
     {
         var existing = await repo.GetByIdAsync(id);
@@ -145,23 +155,43 @@ public class TicketsService(
         return true;
     }
 
-    public async Task<bool> AssignedTechTicketAsync(CancellationToken cancellationToken, int ticketId, string techId)
+    public async Task<bool> AssignedTechTicketAsync(CancellationToken cancellationToken, int ticketId,
+        HashSet<string> techsIds)
     {
         var ticketExists = await repo.GetById(ticketId).AnyAsync(cancellationToken);
         if (!ticketExists)
             throw new TicketNotFoundException();
 
-        var technicianExists = await usersRepo.GetById(techId).AnyAsync(cancellationToken);
-        if (!technicianExists)
+        var existentTechnicians = await usersRepo.GetAll()
+            .AsNoTracking()
+            .Where(u => techsIds.Contains(u.Id))
+            .CountAsync(cancellationToken);
+
+        if (existentTechnicians != techsIds.Count)
             throw new UserNotFoundException();
 
-        var ticketUser = new TicketUsers()
+        var existingAttachedUsers = await ticketUsersRepository.GetAll()
+            .AsNoTracking()
+            .Where(u => u.TicketId == ticketId && techsIds.Contains(u.UserId))
+            .Select(u => u.UserId)
+            .ToListAsync(cancellationToken);
+
+        if (existingAttachedUsers.Count > 0)
+            techsIds.RemoveWhere(id => existingAttachedUsers.Contains(id));
+
+        var techUsers = techsIds.Select(techId => new TicketUsers()
         {
             UserId = techId,
-            TicketId = ticketId
-        };
+            TicketId = ticketId,
+            DefTicketUserRoleId = (short)eDefTicketUserRoles.Responder
+        }).ToList();
 
-        return await ticketUsersRepository.InsertAsync(cancellationToken, ticketUser);
+        return await ticketUsersRepository.AddRangeAsync(cancellationToken, techUsers);
+    }
+
+    public async Task UnassignTechAsync(CancellationToken cancellationToken, int ticketId, string techId)
+    {
+        await ticketUsersRepository.UnassignUserToTicketAsync(cancellationToken, techId, ticketId);
     }
 
     public async Task<PaginatedResponse<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId,
@@ -170,7 +200,7 @@ public class TicketsService(
         var userExists = await usersRepo.GetById(userId).AnyAsync(cancellationToken);
         if (!userExists)
             throw new UserNotFoundException();
-        
+
         return await repo.GetAllByUserAsync(cancellationToken, userId, paginatedQuery);
     }
 
@@ -183,7 +213,7 @@ public class TicketsService(
 
         if (history)
             return await repo.GetHistoryByTechAsync(cancellationToken, id, paginatedQuery);
-        
+
         return await repo.GetAllByTechAsync(cancellationToken, id, paginatedQuery);
     }
 
@@ -242,8 +272,10 @@ public class TicketsService(
             .Select(g => new TechnicianCounters
             {
                 CurrentlyWorking = g.Count(tu => tu.Ticket.SolvedAt == null),
-                Critical = g.Count(tu => tu.Ticket.SolvedAt == null && tu.Ticket.DefTicketPriorityId == (short)eDefTicketPriorities.Urgent),
-                HighPriority = g.Count(tu => tu.Ticket.SolvedAt == null && tu.Ticket.DefTicketPriorityId == (short)eDefTicketPriorities.High),
+                Critical = g.Count(tu =>
+                    tu.Ticket.SolvedAt == null && tu.Ticket.DefTicketPriorityId == (short)eDefTicketPriorities.Urgent),
+                HighPriority = g.Count(tu =>
+                    tu.Ticket.SolvedAt == null && tu.Ticket.DefTicketPriorityId == (short)eDefTicketPriorities.High),
                 SolvedToday = g.Count(tu => tu.Ticket.SolvedAt != null && tu.Ticket.SolvedAt >= today)
             })
             .FirstOrDefaultAsync(cancellationToken) ?? new TechnicianCounters();
@@ -266,7 +298,7 @@ public class TicketsService(
             })
             .FirstOrDefaultAsync(cancellationToken) ?? new UserCounters();
 
-        
+
         return result;
     }
 
