@@ -35,6 +35,7 @@ public class AttachmentsService(
             UserId = user.UserId,
             FileName = request.FileName,
             Url = uploadedFile.Url,
+            FileSize = request.Stream.Length,
             Key = uploadedFile.Key,
             DefStorageProviderId = (short)uploadedFile.Provider
         };

@@ -13,8 +13,11 @@ public interface ITicketsService
     Task<Tickets> CreateAsync(TicketDTO ticket, string userId);
     Task<Tickets> UpdateAsync(TicketDTO ticket, int id);
     Task<bool> DeleteAsync(int id);
+    Task<List<AssignedUser>> GetTicketUsersAsync(CancellationToken cancellationToken, int id);
+    Task<List<UserDto>> GetAvailableTicketUsersAsync(CancellationToken cancellationToken, int id);
     Task<bool> UpdateTicketStatusAsync(int id, short status);
-    Task<bool> AssignedTechTicketAsync(CancellationToken cancellationToken, int ticketId, string techId);
+    Task<bool> AssignedTechTicketAsync(CancellationToken cancellationToken, int ticketId, HashSet<string> techsId);
+    Task UnassignTechAsync(CancellationToken cancellationToken, int ticketId, string techId);
 
     Task<PaginatedResponse<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId,
         PaginatedQuery paginatedQuery);
