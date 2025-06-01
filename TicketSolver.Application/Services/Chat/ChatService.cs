@@ -289,10 +289,17 @@ public class ChatService(
         
             if (existingChat == null)
             {
+                var ticket = await ticketRepository.GetById(ticketId)
+                    .Select(t => new { t.Title, t.Description })
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                var systemPrompt =
+                    $"Você é um assistente técnico que precisa me ajudar a resolver o seguinte problema: {ticket.Title}, {ticket.Description}";
                 logger.LogInformation("Chat será criado quando a primeira mensagem for enviada para o ticket {TicketId}", ticketId);
             
                 return new ChatResponseDto
                 {
+                    SystemPrompt = systemPrompt,
                     TicketId = ticketId,
                     IsNewChat = true,
                     CreatedAt = DateTime.UtcNow,

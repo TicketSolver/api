@@ -111,11 +111,8 @@ public class ChatController : ShellController
         CancellationToken cancellationToken = default
     )
     {
-        var userId = AuthenticatedUser.UserId;
+        var userId = AuthenticatedUser.UserId; 
         var userType = User.FindFirstValue(ClaimTypes.Role);
-
-        if (userId is null)
-            return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
 
         if (!await _chatService.CanAccessChatAsync(ticketId, userId, userType ?? "User", cancellationToken))
             return BadRequest((ApiResponse.Fail("Acesso negado ao chat deste ticket.")));
@@ -171,17 +168,15 @@ public class ChatController : ShellController
         var userId = AuthenticatedUser.UserId;
         var userType = User.FindFirstValue(ClaimTypes.Role);
 
-        if (userId is null)
-            return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
-
         if (!await _chatService.CanAccessChatAsync(ticketId, userId, userType ?? "User", cancellationToken))
             return BadRequest((ApiResponse.Fail("Acesso negado ao chat deste ticket.")));
 
         try
         {
             var chatInfo     = await _chatService.StartChatAsync(ticketId, cancellationToken);
+            if (chatInfo.SystemPrompt == "") return Ok(ApiResponse.Ok(null));
             var history      = new GroqChatHistory();
-            var initialReply = await _chatAiService.AskAsync(history, prompt: "", systemPrompt: null);
+            var initialReply = await _chatAiService.AskAsync(history, prompt: "Soluciona meu problema", systemPrompt: chatInfo.SystemPrompt);
 
             var systemMsg = await _chatService.SendSystemMessageAsync(
                 new SendSystemMessageRequestDto

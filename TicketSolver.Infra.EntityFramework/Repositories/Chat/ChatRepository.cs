@@ -3,6 +3,7 @@ using TicketSolver.Domain.Models.Chat;
 using TicketSolver.Domain.Persistence.Tables.Chat;
 using TicketSolver.Domain.Repositories.Chat;
 using TicketSolver.Infra.EntityFramework.Persistence;
+using TicketSolver.Infra.EntityFramework.Repositories.Ticket;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.Chat;
 
@@ -19,25 +20,29 @@ public class ChatRepository(EfContext context) : EFRepositoryBase<TicketChat>(co
             .Include(c => c.Ticket)
             .FirstOrDefaultAsync(c => c.TicketId == ticketId, cancellationToken);
     }
-
+    
     public async Task<TicketChat> AddMessageToChatAsync(int ticketId, Message message, CancellationToken cancellationToken = default)
     {
+        var ticketRepository = new TicketsRepository(context);
         var chat = await GetChatByTicketIdAsync(ticketId, cancellationToken);
+        var ticket = await ticketRepository.GetByIdAsync(ticketId);
         
         if (chat == null)
         {
             // Criar novo chat se não existir
             chat = new TicketChat
             {
+                Ticket = ticket,
                 TicketId = ticketId,
                 ChatHistory = "[]",
                 TotalMessages = 0,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
             };
             
-            await DbSet.AddAsync(chat, cancellationToken);
-            await Context.SaveChangesAsync(cancellationToken);
+            await DbSet.AddAsync(chat);
+            await Context.SaveChangesAsync();
+
         }
 
         // Adicionar nova mensagem
@@ -46,7 +51,7 @@ public class ChatRepository(EfContext context) : EFRepositoryBase<TicketChat>(co
         chat.Messages = messages;
         chat.TotalMessages = messages.Count;
         chat.LastMessageAt = message.Timestamp;
-        chat.UpdatedAt = DateTime.UtcNow;
+        chat.UpdatedAt = DateTime.Now;
 
         DbSet.Update(chat);
         await Context.SaveChangesAsync(cancellationToken);

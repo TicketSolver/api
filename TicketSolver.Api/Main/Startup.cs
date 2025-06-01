@@ -37,6 +37,8 @@ public static class Startup
         var app = builder.Build();
         app.UseMiddleware<HttpExceptionHandler>();
         app.UseCors("AllowFrontend");
+        app.UseAuthentication(); // necessário para ativar o middleware de autenticação
+        app.UseAuthorization();  // necessário para os [Authorize] nos controllers
         ConfigureApp.Setup(app, builder.Environment.IsDevelopment());
         SwaggerExtensions.UseSwagger(app, builder);
         
