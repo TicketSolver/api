@@ -25,6 +25,8 @@ public class AuthService(
 {
     public async Task<IdentityResult> PreRegisterUserAsync(PreRegisterModel model, CancellationToken cancellationToken)
     {
+        var utcNow = DateTime.UtcNow;
+
         var user = new Users
         {
             Email = model.Email,
@@ -32,12 +34,14 @@ public class AuthService(
             FullName = model.FullName,
             DefUserTypeId = model.DefUserTypeId,
             DefUserStatusId = model.DefUserStatusId,
-            TenantId = model.TenantId
+            TenantId = model.TenantId,
+            CreatedAt = utcNow,
+            UpdatedAt = utcNow
         };
 
         return await userManager.CreateAsync(user, model.Password);
     }
-
+    
     public async Task<LoginDataReturn> LoginUserAsync(LoginModel model, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(model.Email);
@@ -94,11 +98,11 @@ public class AuthService(
             DefUserTypeId = (short)eDefUserTypes.Admin,
             TenantId = tenant.Id,
         };
-
+        user.CreatedAt = user.CreatedAt.ToUniversalTime();
+        user.UpdatedAt = user.UpdatedAt.ToUniversalTime();
         var result = await userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
             throw new UserRegistrationException(result.Errors.Select(e => e.Description));
-        
         return user;
     }
 

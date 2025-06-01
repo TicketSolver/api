@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using TicketSolver.Domain.Persistence.Tables.User;
 using TicketSolver.Domain.Repositories.User;
 using TicketSolver.Infra.EntityFramework.Persistence;
@@ -51,5 +52,20 @@ public class UsersRepository(EfContext context) : EFRepositoryBase<Users>(contex
         await Context.SaveChangesAsync(cancellationToken);
         
         return user;
+    }
+
+    public Task<IQueryable<Users>> GetByTenantAsyc(int tenantId, CancellationToken cancellationToken = default)
+    {
+        var a = Task.FromResult(GetAll()
+            .Where(u => u.TenantId == tenantId));
+        Console.Out.WriteLine($" COUNT: {a.Result.Count()}");
+        return a;
+    }
+    
+    public override async Task<bool> DeleteAsync(CancellationToken cancellationToken, Users user)
+    {
+        Context.Users.Remove(user);
+        var result = await Context.SaveChangesAsync(cancellationToken);
+        return result > 0;
     }
 }

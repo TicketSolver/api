@@ -4,18 +4,17 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>TicketSolver.Infra.GeminiAI</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TicketSolver.Api.Tests\TicketSolver.Api.Tests.csproj" />
-      <ProjectReference Include="..\TicketSolver.Domain.Tests\TicketSolver.Domain.Tests.csproj" />
       <ProjectReference Include="..\TicketSolver.Domain\TicketSolver.Domain.csproj" />
+      <ProjectReference Include="..\TicketSolver.Infra.EntityFramework\TicketSolver.Infra.EntityFramework.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="GroqNet" Version="1.0.1" />
-      <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.4" />
-      <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="9.0.4" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
     </ItemGroup>
 
 </Project>

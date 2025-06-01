@@ -1,7 +1,9 @@
+using GroqNet.ChatCompletions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TicketSolver.Application.Models.Chat;
 using TicketSolver.Application.Services.Chat.Interfaces;
+using TicketSolver.Application.Services.ChatAI.Interface;
 using TicketSolver.Domain.Models.Chat;
 using TicketSolver.Domain.Persistence.Tables.Chat;
 using TicketSolver.Domain.Repositories.Chat;
@@ -14,59 +16,104 @@ public class ChatService(
     IChatRepository chatRepository,
     ITicketsRepository ticketRepository,
     ILogger<ChatService> logger,
+    IChatAiService chatAiService,
     ITicketUsersRepository ticketUsersRepository)
     : IChatService
 {
-    public async Task<ChatMessageResponseDto> SendMessageAsync(SendMessageRequestDto request, CancellationToken cancellationToken = default)
+    public async Task<ChatMessageResponseDto> SendMessageAsync(
+    SendMessageRequestDto request,
+    CancellationToken cancellationToken = default
+)
+{
+    try
     {
-        try
+        // Validações
+        if (string.IsNullOrWhiteSpace(request.Text))
+            throw new ArgumentException("Mensagem não pode estar vazia");
+
+        if (!await ticketRepository.ExistsAsync(request.TicketId, cancellationToken))
+            throw new ArgumentException("Ticket não encontrado");
+
+        // 1) Persiste a mensagem do usuário
+        var userMessage = new Message
         {
-            // Validações
-            if (string.IsNullOrWhiteSpace(request.Text))
-                throw new ArgumentException("Mensagem não pode estar vazia");
+            Id            = Guid.NewGuid().ToString(),
+            SenderId      = request.SenderId,
+            SenderType    = request.SenderType,
+            SenderName    = request.SenderName,
+            text          = request.Text,
+            MessageType   = request.MessageType,
+            AttachmentUrl = request.AttachmentUrl,
+            Timestamp     = DateTime.UtcNow,
+            IsRead        = false
+        };
 
-            if (!await ticketRepository.ExistsAsync(request.TicketId, cancellationToken))
-                throw new ArgumentException("Ticket não encontrado");
+        var updatedChat = await chatRepository
+            .AddMessageToChatAsync(request.TicketId, userMessage, cancellationToken);
 
-            // Criar mensagem
-            var message = new Message
-            {
-                Id = Guid.NewGuid().ToString(),
-                SenderId = request.SenderId,
-                SenderType = request.SenderType,
-                SenderName = request.SenderName,
-                text = request.Text,
-                MessageType = request.MessageType,
-                AttachmentUrl = request.AttachmentUrl,
-                Timestamp = DateTime.UtcNow,
-                IsRead = false
-            };
+        logger.LogInformation(
+            "Mensagem enviada para o ticket {TicketId} por {SenderName}",
+            request.TicketId, request.SenderName);
 
-            // Adicionar mensagem ao chat
-            var updatedChat = await chatRepository.AddMessageToChatAsync(request.TicketId, message, cancellationToken);
+        // 2) Prepara o histórico para a IA
+        var groqHistory = new GroqChatHistory(
+            updatedChat.Messages
+                .Select(m => new GroqMessage(m.text)
+                {
+                    Role = m.SenderType == "assistant" ? "assistant" : "user"
+                })
+                .ToList()
+        );
 
+        // 3) Chama a IA
+        var aiReplyText = await chatAiService.AskAsync(
+            groqHistory,
+            request.Text,
+            null // ou use request.SystemPrompt se existir
+        );
+
+        // 4) Persiste a resposta da IA
+        var aiMessage = new Message
+        {
+            Id            = Guid.NewGuid().ToString(),
+            SenderId      = "IA",
+            SenderType    = "assistant",
+            SenderName    = "IA",
+            text          = aiReplyText,
+            MessageType   = "text",
+            AttachmentUrl = null,
+            Timestamp     = DateTime.UtcNow,
+            IsRead        = false
+        };
+        await chatRepository.AddMessageToChatAsync(request.TicketId, aiMessage, cancellationToken);
             logger.LogInformation("Mensagem enviada para o ticket {TicketId} por {SenderName}", request.TicketId, request.SenderName);
+        
 
-            return new ChatMessageResponseDto
-            {
-                Id = message.Id,
-                TicketId = request.TicketId,
-                SenderId = message.SenderId.ToString(),
-                SenderType = message.SenderType,
-                SenderName = message.SenderName,
-                Text = message.text,
-                MessageType = message.MessageType,
-                AttachmentUrl = message.AttachmentUrl,
-                IsRead = message.IsRead,
-                Timestamp = message.Timestamp
-            };
-        }
-        catch (Exception ex)
+        // 5) Retorna a DTO da resposta da IA
+        return new ChatMessageResponseDto
         {
-            logger.LogError(ex, "Erro ao enviar mensagem para o ticket {TicketId}", request.TicketId);
-            throw;
-        }
+            Id            = aiMessage.Id,
+            TicketId      = request.TicketId,
+            SenderId      = aiMessage.SenderId,
+            SenderType    = aiMessage.SenderType,
+            SenderName    = aiMessage.SenderName,
+            Text          = aiMessage.text,
+            MessageType   = aiMessage.MessageType,
+            AttachmentUrl = aiMessage.AttachmentUrl,
+            IsRead        = aiMessage.IsRead,
+            Timestamp     = aiMessage.Timestamp
+        };
     }
+    catch (Exception ex)
+    {
+        logger.LogError(
+            ex,
+            "Erro ao enviar mensagem para o ticket {TicketId}",
+            request.TicketId);
+        throw;
+    }
+}
+
 
     public async Task<ChatHistoryResponseDto> GetChatHistoryAsync(int ticketId, CancellationToken cancellationToken = default)
     {
@@ -272,34 +319,38 @@ public class ChatService(
     {
         try
         {
-            // Implementar lógica de permissão baseada no seu domínio
-            // Por exemplo: verificar se o usuário é dono do ticket, técnico responsável, etc.
-            
-            var ticketCreatedById = await ticketRepository
-                .GetById(ticketId)
-                .Select(t => t.CreatedById)
-                .FirstOrDefaultAsync(cancellationToken);
-            
-            if (ticketCreatedById == null) return false;
+            var isAdmin      = userType == "1";
+            var isTech       = userType == "2";
+            var isRegular    = userType == "3";
 
-            // Admins e técnicos podem acessar qualquer chat
-            if (userType.Equals("Admin", StringComparison.OrdinalIgnoreCase) || 
-                userType.Equals("Technician", StringComparison.OrdinalIgnoreCase))
+            if (isAdmin || isTech)
                 return true;
 
-            // Usuários só podem acessar seus próprios tickets
-            if (userType.Equals("User", StringComparison.OrdinalIgnoreCase))
-                return ticketCreatedById == userId ||
-                       await ticketUsersRepository.IsUserAssignedToTicketAsync(cancellationToken, userId, ticketId);
+            // usuário comum só se for dono ou estiver atribuído
+            if (isRegular)
+            {
+                var createdBy = await ticketRepository
+                    .GetByIdAsync(ticketId);
+                if (createdBy == null) 
+                    return false;
+
+                if (createdBy.CreatedById == userId) 
+                    return true;
+
+                // ou se está atribuído
+                return await ticketUsersRepository
+                    .IsUserAssignedToTicketAsync(cancellationToken, userId, ticketId);
+            }
 
             return false;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Erro ao verificar permissão de acesso ao chat do ticket {TicketId} para o usuário {UserId}", ticketId, userId);
+            logger.LogError(ex, "…");
             return false;
         }
     }
+
 
     public async Task<IEnumerable<ChatMessageDto>> SearchMessagesAsync(ChatSearchRequestDto request, CancellationToken cancellationToken = default)
     {

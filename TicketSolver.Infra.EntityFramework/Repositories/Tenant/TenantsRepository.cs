@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TicketSolver.Domain.Models;
 using TicketSolver.Domain.Persistence.Tables.Tenant;
+using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Tenant;
 using TicketSolver.Infra.EntityFramework.Persistence;
 
@@ -40,6 +42,8 @@ public class TenantsRepository(EfContext context) : EFRepositoryBase<Tenants>(co
 
     public async Task<Tenants?> AddTenantAsync(Tenants tenant, CancellationToken cancellationToken)
     {
+        tenant.CreatedAt = DateTime.UtcNow;
+        tenant.UpdatedAt = DateTime.UtcNow;
         await Context.Tenants.AddAsync(tenant, cancellationToken);
         await Context.SaveChangesAsync(cancellationToken);
         return tenant;
@@ -50,4 +54,19 @@ public class TenantsRepository(EfContext context) : EFRepositoryBase<Tenants>(co
         return await GetAll()
             .AnyAsync(t => t.AdminKey == key || t.PublicKey == key, cancellationToken);
     }
+
+    public Task<Tenants?> GetByPublicKeyAsync(Guid tenantKey, CancellationToken ct)
+    {
+        return GetAll()
+            .Where(t => t.PublicKey == tenantKey)
+            .FirstOrDefaultAsync(ct);
+    }
+    
+    public Task<Tenants?> GetByAdminKeyAsync(Guid tenantKey, CancellationToken ct)
+    {
+        return GetAll()
+            .Where(t => t.AdminKey == tenantKey)
+            .FirstOrDefaultAsync(ct);
+    }
+    
 }
