@@ -1,6 +1,4 @@
-﻿using Xunit;
-
-namespace TicketSolver.Domain.Tests;
+﻿namespace TicketSolver.Domain.Tests;
 
 public class UnitTest1
 {
