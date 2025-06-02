@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using TicketSolver.Api.Middlewares;
 using TicketSolver.Api.Settings.Swagger;
 using TicketSolver.Domain.Extensions;
@@ -19,7 +20,6 @@ public static class Startup
         ConfigureRepositories.Setup(builder.Services);
         ConfigureServices.Setup(builder.Services);
         SwaggerExtensions.AddSwagger(builder);
-
         builder.Services.Configure<StorageSettings>(builder.Configuration.GetSection("Storage"));
         builder.Services.ConfigureStorage(builder.Configuration);
         

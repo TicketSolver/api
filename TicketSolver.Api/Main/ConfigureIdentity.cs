@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -15,6 +16,13 @@ public static class ConfigureIdentity
 {
     public static void Setup(IServiceCollection services)
     {
+        services
+            .AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                options.JsonSerializerOptions.MaxDepth = 64;
+            });
         services.AddIdentity<Users, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = false;

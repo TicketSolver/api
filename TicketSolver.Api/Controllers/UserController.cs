@@ -108,6 +108,11 @@ public class UsersController(IUsersService usersService) : ShellController
             pageSize = 10;
             page = 1;
         }
+        if (tenantId <= 0)
+            return BadRequest(ApiResponse.Fail("O TenantId deve ser um número positivo."));
+        
+        if (AuthenticatedUser.DefUserType != eDefUserTypes.Admin)
+            throw new ForbiddenException("Você não possui permissão para acessar usuários do Tenants!");
         var users = await usersService.GetUsersTenantAsync(tenantId, page, pageSize, cancellationToken);
         if (users is null || users.Items.Count == 0)
             return NotFound(ApiResponse.Fail("Nenhum usuário encontrado para o Tenant especificado."));

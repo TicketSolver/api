@@ -44,7 +44,7 @@ public class ChatService(
             text          = request.Text,
             MessageType   = request.MessageType,
             AttachmentUrl = request.AttachmentUrl,
-            Timestamp     = DateTime.UtcNow,
+            Timestamp     = DateTime.Now,
             IsRead        = false
         };
 
@@ -472,7 +472,7 @@ public class ChatService(
             {
                 Id = message.Id,
                 TicketId = request.TicketId,
-                SenderId = message.SenderId.ToString(),
+                SenderId = message.SenderId,
                 SenderType = message.SenderType,
                 SenderName = message.SenderName,
                 Text = message.text,

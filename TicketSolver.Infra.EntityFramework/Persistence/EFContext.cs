@@ -27,13 +27,14 @@ public class EfContext(DbContextOptions<EfContext> options) : DbContext(options)
                   .HasDefaultValue(0);
             entity.Property(e => e.CreatedAt)
                   .IsRequired()
-                  .HasColumnType("timestamp")
+                  .HasColumnType("timestamp without time zone")
                   .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
             entity.Property(e => e.UpdatedAt)
                   .IsRequired()
-                  .HasColumnType("timestamp")
+                  .HasColumnType("timestamp without time zone")
                   .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.LastMessageAt)
+                  .HasColumnType("timestamp without time zone");
             entity.HasOne(e => e.Ticket)
                   .WithOne() // ou .WithOne(t => t.Chat) se adicionar no Ticket
                   .HasForeignKey<TicketChat>(e => e.TicketId)
@@ -90,7 +91,7 @@ public class EfContext(DbContextOptions<EfContext> options) : DbContext(options)
 
           foreach (var entry in entries)
           {
-                entry.Entity.UpdatedAt = DateTime.UtcNow;
+                entry.Entity.UpdatedAt = DateTime.Now;
           }
     }
 }

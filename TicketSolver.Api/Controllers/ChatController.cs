@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -188,8 +189,9 @@ public class ChatController : ShellController
                 },
                 cancellationToken
             );
-
-            return Ok(new { data = new { chatInfo, initialMessage = systemMsg } });
+            var a = new { data = new { chatInfo, initialMessage = systemMsg.Text } };
+            Console.WriteLine(a);
+            return Ok(a);
         }
         catch (ArgumentException ex)
         {

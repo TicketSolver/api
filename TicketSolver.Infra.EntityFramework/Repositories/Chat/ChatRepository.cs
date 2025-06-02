@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using TicketSolver.Domain.Models.Chat;
 using TicketSolver.Domain.Persistence.Tables.Chat;
@@ -21,41 +22,42 @@ public class ChatRepository(EfContext context) : EFRepositoryBase<TicketChat>(co
             .FirstOrDefaultAsync(c => c.TicketId == ticketId, cancellationToken);
     }
     
+
+
+
     public async Task<TicketChat> AddMessageToChatAsync(int ticketId, Message message, CancellationToken cancellationToken = default)
     {
         var ticketRepository = new TicketsRepository(context);
         var chat = await GetChatByTicketIdAsync(ticketId, cancellationToken);
         var ticket = await ticketRepository.GetByIdAsync(ticketId);
-        
+
         if (chat == null)
         {
-            // Criar novo chat se não existir
             chat = new TicketChat
             {
-                Ticket = ticket,
-                TicketId = ticketId,
-                ChatHistory = "[]",
-                TotalMessages = 0,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                Ticket       = ticket,
+                TicketId     = ticketId,
+                ChatHistory  = "[]",
+                TotalMessages= 0,
+                CreatedAt    = DateTime.Now,
+                UpdatedAt    = DateTime.Now
             };
-            
-            await DbSet.AddAsync(chat);
-            await Context.SaveChangesAsync();
 
+            await DbSet.AddAsync(chat);
+            await Context.SaveChangesAsync(cancellationToken);
         }
 
         // Adicionar nova mensagem
-        var messages = chat.Messages;
-        messages.Add(message);
-        chat.Messages = messages;
-        chat.TotalMessages = messages.Count;
-        chat.LastMessageAt = message.Timestamp;
+        chat.Messages.Add(message);
+        chat.ChatHistory = JsonSerializer.Serialize(chat.Messages);
+        chat.TotalMessages  = chat.Messages.Count;
+        chat.LastMessageAt = message.Timestamp.Date.ToLocalTime();
         chat.UpdatedAt = DateTime.Now;
 
         DbSet.Update(chat);
         await Context.SaveChangesAsync(cancellationToken);
-
+        Console.WriteLine("Chat updated with new message.");
+        Console.WriteLine($" chat: {chat}");
         return chat;
     }
 

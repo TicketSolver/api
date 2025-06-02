@@ -23,15 +23,16 @@ public class TicketChat
 
     public int TotalMessages { get; set; } = 0;
 
+    [Column(TypeName = "timestamp without time zone")]
     public DateTime? LastMessageAt { get; set; }
 
     [Required]
-    [Column(TypeName = "timestamp")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column(TypeName = "timestamp without time zone")]
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     [Required]
-    [Column(TypeName = "timestamp")]
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    [Column(TypeName = "timestamp without time zone")]
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
     
     public virtual Tickets Ticket { get; set; } = null!;
     public bool IsArchived { get; set; } = false;

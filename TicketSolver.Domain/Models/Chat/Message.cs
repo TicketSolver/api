@@ -10,6 +10,6 @@ public class Message
     public string MessageType { get; set; } = "Text"; // Text, File, Image
     public string? AttachmentUrl { get; set; }
     public bool IsRead { get; set; } = false;
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; set; } = DateTime.Now;
 }
 
