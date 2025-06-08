@@ -74,7 +74,7 @@ public class UsersService(
         if (user.FullName != null) patchuser.FullName = user.FullName;
         patchuser.DefUserTypeId = (short)user.DefUserTypeId!;
         patchuser.TicketUsers = [];
-        patchuser.UpdatedAt = DateTime.UtcNow;
+        patchuser.UpdatedAt = DateTime.Now;
         try
         {
             return usersRepository.UpdateUserAsync(patchuser, cancellationToken);

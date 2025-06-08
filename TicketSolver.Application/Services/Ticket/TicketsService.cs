@@ -70,8 +70,8 @@ public class TicketsService(
         t.DefTicketCategoryId = ticket.Category;
         t.Status = (short)eDefTicketStatus.New;
         t.DefUserSatisfactionId = (short)eDefUserSatisfaction.Neutral;
-        t.CreatedAt = DateTime.UtcNow;
-        t.UpdatedAt = DateTime.UtcNow;
+        t.CreatedAt = DateTime.Now;
+        t.UpdatedAt = DateTime.Now;
         return await repo.AddAsync(t);
     }
 
@@ -96,7 +96,7 @@ public class TicketsService(
             existing.Status = newTicket.Status;
             existing.DefTicketPriorityId = newTicket.DefTicketPriorityId;
             existing.DefTicketCategoryId = newTicket.DefTicketCategoryId;
-            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedAt = DateTime.Now;
             updateAsync = await repo.UpdateAsync(existing) ?? new Tickets();
         }
         catch (TicketException e)
@@ -150,7 +150,7 @@ public class TicketsService(
         if (existing is null)
             return false;
         existing.Status = status;
-        existing.UpdatedAt = DateTime.UtcNow;
+        existing.UpdatedAt = DateTime.Now;
         await repo.UpdateAsync(existing);
         return true;
     }
@@ -264,7 +264,7 @@ public class TicketsService(
 
     public async Task<TechnicianCounters> GetTechCountersAsync(CancellationToken cancellationToken, string techId)
     {
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.Now.Date;
 
         var result = await ticketUsersRepository.GetByUserId(techId)
             .AsNoTracking()

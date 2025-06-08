@@ -42,8 +42,8 @@ public class TenantsRepository(EfContext context) : EFRepositoryBase<Tenants>(co
 
     public async Task<Tenants?> AddTenantAsync(Tenants tenant, CancellationToken cancellationToken)
     {
-        tenant.CreatedAt = DateTime.UtcNow;
-        tenant.UpdatedAt = DateTime.UtcNow;
+        tenant.CreatedAt = DateTime.Now;
+        tenant.UpdatedAt = DateTime.Now;
         await Context.Tenants.AddAsync(tenant, cancellationToken);
         await Context.SaveChangesAsync(cancellationToken);
         return tenant;

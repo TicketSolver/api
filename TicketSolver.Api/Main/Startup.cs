@@ -13,7 +13,7 @@ public static class Startup
     public static WebApplication Configure(WebApplicationBuilder builder)
     {
         builder.Configuration.AddEnvironmentBasedDotEnv();
-    
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         ConfigureDbConnection.Setup(builder.Services, builder.Configuration);
         ConfigureIdentity.Setup(builder.Services);
         ConfigureDependencies.Setup(builder.Services);
