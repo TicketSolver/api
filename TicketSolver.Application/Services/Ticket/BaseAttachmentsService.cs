@@ -10,7 +10,7 @@ using TicketSolver.Domain.Repositories.Ticket;
 
 namespace TicketSolver.Application.Services.Ticket;
 
-public class AttachmentsService(
+public class BaseAttachmentsService(
     IAttachmentsRepository attachmentsRepository,
     IFileStorageContext fileStorageContext,
     ITicketsRepository ticketsRepository

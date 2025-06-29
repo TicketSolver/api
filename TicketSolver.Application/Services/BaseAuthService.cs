@@ -16,7 +16,7 @@ using TicketSolver.Domain.Repositories.User;
 
 namespace TicketSolver.Application.Services;
 
-public class AuthService(
+public class BaseAuthService(
     ITenantsRepository tenantsRepository,
     IUsersRepository usersRepository,
     UserManager<Users> userManager,

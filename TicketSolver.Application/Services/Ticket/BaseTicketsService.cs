@@ -14,7 +14,7 @@ using TicketSolver.Domain.Repositories.User;
 
 namespace TicketSolver.Application.Services.Ticket;
 
-public class TicketsService(
+public class BaseTicketsService(
     ITicketsRepository repo,
     IUsersRepository usersRepo,
     ITicketUsersRepository ticketUsersRepository,

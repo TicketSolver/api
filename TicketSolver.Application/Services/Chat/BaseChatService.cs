@@ -14,10 +14,10 @@ using TicketSolver.Domain.Repositories.Ticket;
 
 namespace TicketSolver.Application.Services.Chat;
 
-public class ChatService(
+public class BaseChatService(
     IChatRepository chatRepository,
     ITicketsRepository ticketRepository,
-    ILogger<ChatService> logger,
+    ILogger<BaseChatService> logger,
     IChatAiService chatAiService,
     ITicketUsersRepository ticketUsersRepository)
     : IChatService

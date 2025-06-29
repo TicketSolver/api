@@ -4,7 +4,7 @@ using TicketSolver.Domain.Repositories.Tenant;
 
 namespace TicketSolver.Application.Services.Tenant;
 
-public class TenantsService(
+public class BaseTenantsService(
     ITenantsRepository tenantsRepository
 ) : ITenantsService
 {

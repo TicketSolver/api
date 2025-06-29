@@ -9,7 +9,7 @@ using TicketSolver.Domain.Repositories.Tenant;
 
 namespace TicketSolver.Application.Services.admin;
 
-public class AdminStatsService(
+public class BaseAdminStatsService(
     ITenantsRepository tenantRepo,
     IAdminStatsRepository statsRepo,
     ITenantTicketsRepository ticketsRepo)

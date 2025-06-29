@@ -12,7 +12,7 @@ using TicketSolver.Domain.Repositories.User;
 
 namespace TicketSolver.Application.Services.User;
 
-public class UsersService(
+public class BaseUsersService(
     IUsersRepository usersRepository
 ) : IUsersService
 {
