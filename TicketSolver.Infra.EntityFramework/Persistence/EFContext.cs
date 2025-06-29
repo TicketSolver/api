@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TicketSolver.Domain.Persistence.Tables.Chat;
 using TicketSolver.Domain.Persistence.Tables.Defs;
+using TicketSolver.Domain.Persistence.Tables.Service;
 using TicketSolver.Domain.Persistence.Tables.Tenant;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Persistence.Tables.User;
@@ -71,7 +72,9 @@ public class EfContext(DbContextOptions<EfContext> options) : DbContext(options)
     public DbSet<DefUserStatus> DefUserStatus { get; set; }
     public DbSet<DefStorageProviders> DefStorageProviders { get; set; }
     public DbSet<DefUserSatisfaction> DefUserSatisfaction { get; set; }
-    
+    public DbSet<ServiceAddress> ServiceAddresses { get; set; }
+    public DbSet<ServiceRequest> ServiceRequests { get; set; }
+    public DbSet<ServiceAvailableSlots> ServiceAvailableSlots { get; set; }
     public override int SaveChanges()
     {
           UpdateTimestamps();

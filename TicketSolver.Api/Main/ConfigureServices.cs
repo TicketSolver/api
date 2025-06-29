@@ -9,12 +9,15 @@ using TicketSolver.Application.Services.Chat.Interfaces;
 using TicketSolver.Application.Services.ChatAI;
 using TicketSolver.Application.Services.ChatAI.Interface;
 using TicketSolver.Application.Services.Interfaces;
+using TicketSolver.Application.Services.Service;
+using TicketSolver.Application.Services.Service.Interfaces;
 using TicketSolver.Application.Services.Tenant;
 using TicketSolver.Application.Services.Tenant.Interfaces;
 using TicketSolver.Application.Services.Ticket;
 using TicketSolver.Application.Services.Ticket.Interfaces;
 using TicketSolver.Application.Services.User;
 using TicketSolver.Application.Services.User.Interfaces;
+using TicketSolver.Domain.Persistence.Tables.Service;
 using TicketSolver.Infra.GeminiAI;
 
 
@@ -33,6 +36,7 @@ public static class ConfigureServices
         services.AddTransient<IAdminStatsService, AdminStatsService>();
         services.AddHttpClient<IAiProvider, GeminiProvider>();
         services.AddTransient<IChatAiService,    AiChatService>();
+        services.AddTransient<IServiceRequestService, ServiceRequestService>();
         
         
         
