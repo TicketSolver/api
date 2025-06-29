@@ -25,7 +25,7 @@ public class AuthService(
 {
     public async Task<IdentityResult> PreRegisterUserAsync(PreRegisterModel model, CancellationToken cancellationToken)
     {
-        var utcNow = DateTime.UtcNow;
+        var utcNow = DateTime.Now;
 
         var user = new Users
         {
@@ -62,7 +62,7 @@ public class AuthService(
                 new Claim(ClaimTypes.Email, user.Email ?? throw new InvalidOperationException()),
                 new Claim(ClaimTypes.Role, user.DefUserTypeId.ToString()),
             }),
-            Expires = DateTime.UtcNow.AddHours(jwtSettings.Expiration),
+            Expires = DateTime.Now.AddHours(jwtSettings.Expiration),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature)
         };

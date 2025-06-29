@@ -1,3 +1,4 @@
+using TicketSolver.Application.Models;
 using TicketSolver.Application.Models.Chat;
 
 namespace TicketSolver.Application.Services.Chat.Interfaces;
@@ -14,6 +15,8 @@ public interface IChatService
 
     Task<IEnumerable<ChatSummaryDto>> GetRecentChatsAsync(int limit = 10, CancellationToken cancellationToken = default);
 
+    Task<IEnumerable<TicketPendingResponseDto>> GetTicketsPendingTechnicianResponseAsync(
+        CancellationToken cancellationToken = default);
     Task<ChatStatisticsDto> GetChatStatisticsAsync(int ticketId, CancellationToken cancellationToken = default);
 
     Task<ChatResponseDto> StartChatAsync(int ticketId, CancellationToken cancellationToken = default);
@@ -25,4 +28,8 @@ public interface IChatService
     Task<ChatActivitySummaryDto> GetChatActivitySummaryAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default);
     Task ArchiveChatAsync(int ticketId, bool isArchived, CancellationToken cancellationToken = default);
     Task<ChatInfoDto> GetChatInfoAsync(int ticketId, CancellationToken cancellationToken = default);
+    Task<ChatMessageResponseDto> SendDirectMessageAsync(SendMessageRequestDto request, CancellationToken cancellationToken = default);
+    Task<bool> IsTicketAssignedToTechnicianAsync(int ticketId, CancellationToken cancellationToken = default);
+    Task TransferToTechnicianAsync(int ticketId, string userId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<string>> GetAvailableTechniciansAsync(CancellationToken cancellationToken = default);
 }
