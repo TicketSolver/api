@@ -6,7 +6,7 @@ using TicketSolver.Infra.EntityFramework.Persistence.Contexts.Interfaces;
 
 namespace MobileSolver.Infra.EntityFramework.Persistence.Contexts;
 
-public class AppDbContext(DbContextOptions<EfContext> options) : EfContext(options), IEfContext
+public class AppDbContext(DbContextOptions<EfContext> options) : EfContext(options)
 {
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
