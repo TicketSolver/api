@@ -1,14 +1,16 @@
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using TicketSolver.Domain.Models.Chat;
 using TicketSolver.Domain.Persistence.Tables.Chat;
+using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Chat;
-using TicketSolver.Infra.EntityFramework.Persistence;
-using TicketSolver.Infra.EntityFramework.Repositories.Ticket;
+using TicketSolver.Domain.Repositories.Ticket;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts.Interfaces;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.Chat;
 
-public class ChatRepository(EfContext context) : EFRepositoryBase<TicketChat>(context), IChatRepository
+public class ChatRepository<TTickets>(IEfContext context, ITicketsRepository<TTickets> ticketsRepository) 
+    : EFRepositoryBase<TicketChat>(context), IChatRepository
+    where TTickets : Tickets
 {
     public async Task<IEnumerable<TicketChat>> ExecuteQueryAsync(IQueryable<TicketChat> query, CancellationToken cancellationToken = default)
     {
@@ -27,9 +29,8 @@ public class ChatRepository(EfContext context) : EFRepositoryBase<TicketChat>(co
 
     public async Task<TicketChat> AddMessageToChatAsync(int ticketId, Message message, CancellationToken cancellationToken = default)
     {
-        var ticketRepository = new TicketsRepository(context);
         var chat = await GetChatByTicketIdAsync(ticketId, cancellationToken);
-        var ticket = await ticketRepository.GetByIdAsync(ticketId);
+        var ticket = await ticketsRepository.GetByIdAsync(ticketId);
 
         if (chat == null)
         {

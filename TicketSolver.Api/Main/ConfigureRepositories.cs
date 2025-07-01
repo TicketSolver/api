@@ -1,3 +1,4 @@
+using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.admin;
 using TicketSolver.Domain.Repositories.Chat;
 using TicketSolver.Domain.Repositories.Service;
@@ -18,10 +19,10 @@ public static class ConfigureRepositories
     public static void Setup(IServiceCollection services)
     {
         services.AddTransient<IUsersRepository, UsersRepository>();
-        services.AddTransient<ITicketsRepository, TicketsRepository>();
+        services.AddTransient<ITicketsRepository<Tickets>, TicketsRepository<Tickets>>();
         services.AddTransient<ITenantsRepository, TenantsRepository>();
         services.AddTransient<IAttachmentsRepository, AttachmentsRepository>();
-        services.AddTransient<IChatRepository, ChatRepository>();
+        services.AddTransient<IChatRepository, ChatRepository<Tickets>>();
         services.AddTransient<ITicketUsersRepository, TicketUsersRepository>();
         services.AddTransient<IAdminStatsRepository, AdminStatsRepository>();
         services.AddTransient<ITenantTicketsRepository, TenantTicketsRepository>();

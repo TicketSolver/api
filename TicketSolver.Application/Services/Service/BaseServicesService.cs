@@ -6,6 +6,7 @@ using TicketSolver.Application.Services.Service.Interfaces;
 using TicketSolver.Domain.Enums;
 using TicketSolver.Domain.Models;
 using TicketSolver.Domain.Persistence.Tables.Service;
+using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Service;
 using TicketSolver.Domain.Repositories.Ticket;
 
@@ -15,7 +16,7 @@ public class ServiceRequestService(
     IServiceRequestRepository serviceRequestRepository,
     IServiceAvailableSlotsRepository slotsRepository,
     IServiceAddressRepository addressRepository,
-    ITicketsRepository ticketsRepository
+    ITicketsRepository<Tickets> ticketsRepository
 ) : IServiceRequestService
 {
     public async Task<ServiceResponseDTO> RequestServiceAsync(ServiceRequestDTO request, CancellationToken cancellationToken)

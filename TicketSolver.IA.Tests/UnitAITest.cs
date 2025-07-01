@@ -9,7 +9,8 @@ using TicketSolver.Api.Models;
 using TicketSolver.Application.Services.ChatAI.Interface;
 using Xunit;
 using GroqNet;                      // para GroqChatHistory
-using GroqNet.ChatCompletions;      // caso seu controller inclua esse namespace
+using GroqNet.ChatCompletions;
+using TicketSolver.Application.Models.Chat; // caso seu controller inclua esse namespace
 
 namespace TicketSolver.IA.Tests
 {

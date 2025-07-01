@@ -18,6 +18,7 @@ using TicketSolver.Application.Services.Ticket.Interfaces;
 using TicketSolver.Application.Services.User;
 using TicketSolver.Application.Services.User.Interfaces;
 using TicketSolver.Domain.Persistence.Tables.Service;
+using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Infra.GeminiAI;
 
 
@@ -30,9 +31,9 @@ public static class ConfigureServices
         services.AddTransient<IAuthService, BaseAuthService>();
         services.AddTransient<IUsersService, BaseUsersService>();
         services.AddTransient<ITenantsService, BaseTenantsService>();
-        services.AddTransient<ITicketsService, BaseTicketsService>();
-        services.AddTransient<IAttachmentsService, BaseAttachmentsService>();
-        services.AddTransient<IChatService, BaseChatService>();
+        services.AddTransient<ITicketsService<Tickets>, BaseTicketsService<Tickets>>();
+        services.AddTransient<IAttachmentsService, BaseAttachmentsService<Tickets>>();
+        services.AddTransient<IChatService, BaseChatService<Tickets>>();
         services.AddTransient<IAdminStatsService, BaseAdminStatsService>();
         services.AddHttpClient<IAiProvider, GeminiProvider>();
         services.AddTransient<IChatAiService,    AiChatService>();

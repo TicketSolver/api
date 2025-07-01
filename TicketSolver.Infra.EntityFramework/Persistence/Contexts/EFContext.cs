@@ -6,11 +6,12 @@ using TicketSolver.Domain.Persistence.Tables.Service;
 using TicketSolver.Domain.Persistence.Tables.Tenant;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Persistence.Tables.User;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts.Interfaces;
 using TicketSolver.Infra.EntityFramework.Persistence.Mappings;
 
-namespace TicketSolver.Infra.EntityFramework.Persistence;
+namespace TicketSolver.Infra.EntityFramework.Persistence.Contexts;
 
-public class EfContext(DbContextOptions<EfContext> options) : DbContext(options)
+public class EfContext(DbContextOptions<EfContext> options) : DbContext(options), IEfContext
 {
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

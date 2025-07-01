@@ -14,6 +14,7 @@ using TicketSolver.Application.Services.ChatAI.Interface;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Enums;
 using TicketSolver.Infra.EntityFramework.Persistence;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts;
 
 namespace TicketSolver.Api.Controllers;
 

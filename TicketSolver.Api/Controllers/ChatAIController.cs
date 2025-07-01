@@ -8,6 +8,7 @@ using GroqNet;
 using GroqNet.ChatCompletions;
 using Microsoft.AspNetCore.Authorization;
 using TicketSolver.Api.Models;
+using TicketSolver.Application.Models.Chat;
 using TicketSolver.Application.Services.ChatAI.Interface;
 
 namespace TicketSolver.Api.Controllers

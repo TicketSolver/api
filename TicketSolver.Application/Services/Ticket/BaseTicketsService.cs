@@ -14,13 +14,13 @@ using TicketSolver.Domain.Repositories.User;
 
 namespace TicketSolver.Application.Services.Ticket;
 
-public class BaseTicketsService(
-    ITicketsRepository repo,
+public class BaseTicketsService<TTickets>(
+    ITicketsRepository<TTickets> repo,
     IUsersRepository usersRepo,
     ITicketUsersRepository ticketUsersRepository,
-    ICreateTicketAction createTicketAction,
-    ITicketsRepository ticketsRepository
-) : ITicketsService
+    ICreateTicketAction<TTickets> createTicketAction,
+    ITicketsRepository<TTickets> ticketsRepository
+) : ITicketsService<TTickets> where TTickets : Tickets, new()
 {
     public async Task<IEnumerable<TicketShort>> GetAllAsync()
     {
@@ -50,37 +50,37 @@ public class BaseTicketsService(
         return ticketShorts;
     }
     
-    public Task<Tickets?> GetByIdAsync(int id)
+    public Task<TTickets?> GetByIdAsync(int id)
     {
         return repo.GetById(id)
             .AsNoTracking()
-            .Select(t => new Tickets(t))
             .FirstOrDefaultAsync();
     }
 
-    public async Task<Tickets> CreateAsync(TicketDTO ticket, string userId)
+    public async Task<TTickets> CreateAsync(TicketDTO ticketDto, string userId)
     {
-        var t = new Tickets();
-        t.CreatedById = userId;
-        t.Title = ticket.Title;
-        t.Description = ticket.Description;
-        t.DefUserSatisfactionId = 1;
-        t.Status = (short)eDefTicketStatus.New;
-        t.DefTicketPriorityId = ticket.Priority;
-        t.DefTicketCategoryId = ticket.Category;
-        t.Status = (short)eDefTicketStatus.New;
-        t.DefUserSatisfactionId = (short)eDefUserSatisfaction.Neutral;
-        t.CreatedAt = DateTime.Now;
-        t.UpdatedAt = DateTime.Now;
-        return await createTicketAction.ExecuteAsync(t, default);
+        var ticket = new TTickets();
+        ticket.CreatedById = userId;
+        ticket.Title = ticketDto.Title;
+        ticket.Description = ticketDto.Description;
+        ticket.DefUserSatisfactionId = 1;
+        ticket.Status = (short)eDefTicketStatus.New;
+        ticket.DefTicketPriorityId = ticketDto.Priority;
+        ticket.DefTicketCategoryId = ticketDto.Category;
+        ticket.Status = (short)eDefTicketStatus.New;
+        ticket.DefUserSatisfactionId = (short)eDefUserSatisfaction.Neutral;
+        ticket.CreatedAt = DateTime.Now;
+        ticket.UpdatedAt = DateTime.Now;
+        
+        return await createTicketAction.ExecuteAsync(ticket, ticketDto, default);
     }
     
-    public async Task<Tickets> UpdateAsync(TicketDTO ticket, int id)
+    public async Task<TTickets> UpdateAsync(TicketDTO ticket, int id)
     {
-        Tickets updateAsync;
+        TTickets updateAsync;
         try
         {
-            var newTicket = new Tickets
+            var newTicket = new TTickets
             {
                 Title = ticket.Title,
                 Description = ticket.Description,
@@ -97,7 +97,7 @@ public class BaseTicketsService(
             existing.DefTicketPriorityId = newTicket.DefTicketPriorityId;
             existing.DefTicketCategoryId = newTicket.DefTicketCategoryId;
             existing.UpdatedAt = DateTime.Now;
-            updateAsync = await repo.UpdateAsync(existing) ?? new Tickets();
+            updateAsync = await repo.UpdateAsync(existing) ?? new TTickets();
         }
         catch (TicketException e)
         {
@@ -194,7 +194,7 @@ public class BaseTicketsService(
         await ticketUsersRepository.UnassignUserToTicketAsync(cancellationToken, techId, ticketId);
     }
 
-    public async Task<PaginatedResponse<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId,
+    public async Task<PaginatedResponse<TTickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId,
         PaginatedQuery paginatedQuery)
     {
         var userExists = await usersRepo.GetById(userId).AnyAsync(cancellationToken);
@@ -204,7 +204,7 @@ public class BaseTicketsService(
         return await repo.GetAllByUserAsync(cancellationToken, userId, paginatedQuery);
     }
 
-    public async Task<PaginatedResponse<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string id,
+    public async Task<PaginatedResponse<TTickets>> GetAllByTechAsync(CancellationToken cancellationToken, string id,
         PaginatedQuery paginatedQuery, bool history = false)
     {
         var userExists = await usersRepo.GetById(id).AnyAsync(cancellationToken);
@@ -329,20 +329,20 @@ public class BaseTicketsService(
                     """;
     }
 
-    public async Task<IEnumerable<Tickets>> GetLatestUserAsync(string id)
+    public async Task<IEnumerable<TTickets>> GetLatestUserAsync(string id)
     {
         var existing = usersRepo.GetById(id);
-        IEnumerable<Tickets> tickets = new List<Tickets>();
+        IEnumerable<TTickets> tickets = new List<TTickets>();
         if (existing.FirstOrDefault() is null)
             return await Task.FromResult(tickets);
         tickets = await repo.GetLatestUserAsync(id);
         return await Task.FromResult(tickets);
     }
 
-    public async Task<IEnumerable<Tickets>> GetLatestTechAsync(string id)
+    public async Task<IEnumerable<TTickets>> GetLatestTechAsync(string id)
     {
         var existing = usersRepo.GetById(id);
-        IEnumerable<Tickets> tickets = new List<Tickets>();
+        IEnumerable<TTickets> tickets = new List<TTickets>();
         if (existing.FirstOrDefault() is null)
             return await Task.FromResult(tickets);
         tickets = await repo.GetLatestTechAsync(id);

@@ -1,8 +1,9 @@
-﻿using TicketSolver.Domain.Persistence.Tables.Ticket;
+﻿using TicketSolver.Application.Models;
+using TicketSolver.Domain.Persistence.Tables.Ticket;
 
 namespace TicketSolver.Application.Actions.Ticket.Interfaces;
 
-public interface ICreateTicketAction
+public interface ICreateTicketAction<TTickets> where TTickets : Tickets
 {
-    Task<Tickets> ExecuteAsync(Tickets ticket, CancellationToken cancellationToken);
+    Task<TTickets> ExecuteAsync(Tickets ticket, TicketDTO ticketDto, CancellationToken cancellationToken);
 }
