@@ -36,14 +36,44 @@ public class TicketChat
     
     public virtual Tickets Ticket { get; set; } = null!;
     public bool IsArchived { get; set; } = false;
+    
     [NotMapped]
     public List<Message> Messages
     {
-        get => string.IsNullOrEmpty(ChatHistory) 
-            ? new List<Message>() 
-            : JsonSerializer.Deserialize<List<Message>>(ChatHistory) ?? new List<Message>();
+        get 
+        {
+            if (string.IsNullOrEmpty(ChatHistory) || ChatHistory == "[]")
+                return new List<Message>();
             
-        set => ChatHistory = JsonSerializer.Serialize(value ?? new List<Message>());
+            try
+            {
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                };
+            
+                return JsonSerializer.Deserialize<List<Message>>(ChatHistory, options) ?? new List<Message>();
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Erro ao deserializar ChatHistory: {ex.Message}");
+                Console.WriteLine($"ChatHistory: {ChatHistory}");
+                return new List<Message>();
+            }
+        }
+    
+        set 
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = false
+            };
+        
+            ChatHistory = JsonSerializer.Serialize(value ?? new List<Message>(), options);
+        }
     }
+
 }
 

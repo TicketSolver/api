@@ -15,15 +15,6 @@ public class TicketsRepository(EfContext context) : EFRepositoryBase<Tickets>(co
             .Include(t => t.CreatedBy)
             .ToListAsync();
 
-    public async Task<Tickets?> GetByIdAsync(int id)
-        => await context.Tickets
-            .Include(t => t.CreatedBy)
-            .Include(t => t.Attachments)
-            .Include(t => t.TicketUpdates)
-            .Include(t => t.TicketUsers)
-            .FirstOrDefaultAsync(t => t.Id == id);
-
-
     public async Task<Tickets> AddAsync(Tickets ticket)
     {
         context.Tickets.Add(ticket);
@@ -54,7 +45,7 @@ public class TicketsRepository(EfContext context) : EFRepositoryBase<Tickets>(co
         var query = context.Tickets
             .Include(t => t.CreatedBy)
             .Where(t => t.CreatedById == userId);
-        
+
         return await ToPaginatedResult(cancellationToken, query, paginatedQuery);
     }
 
@@ -63,16 +54,17 @@ public class TicketsRepository(EfContext context) : EFRepositoryBase<Tickets>(co
     {
         var query = context.Tickets
             .Where(t => t.TicketUsers.Any(tu => tu.UserId == techId));
-        
+
         return await ToPaginatedResult(cancellationToken, query, paginatedQuery);
     }
 
-    public async Task<PaginatedResponse<Tickets>> GetHistoryByTechAsync(CancellationToken cancellationToken, string techId,
+    public async Task<PaginatedResponse<Tickets>> GetHistoryByTechAsync(CancellationToken cancellationToken,
+        string techId,
         PaginatedQuery paginatedQuery)
     {
         var query = context.Tickets
             .Where(t => t.Status == (short)eDefTicketStatus.Closed && t.TicketUsers.Any(tu => tu.UserId == techId));
-        
+
         return await ToPaginatedResult(cancellationToken, query, paginatedQuery);
     }
 
@@ -115,5 +107,52 @@ public class TicketsRepository(EfContext context) : EFRepositoryBase<Tickets>(co
     {
         return context.Tickets
             .AnyAsync(t => t.Id == requestTicketId, cancellationToken);
+    }
+
+    public async Task<Tickets?> GetByIdAsync(int id)
+    {
+        return await DbSet
+            .Include(t => t.CreatedBy)
+            .FirstOrDefaultAsync(t => t.Id == id);
+    }
+
+    public IQueryable<Tickets> GetById(int id)
+    {
+        return DbSet
+            .Include(t => t.CreatedBy)
+            .Where(t => t.Id == id);
+    }
+
+    // Novos métodos
+    public async Task UpdateStatusAsync(int ticketId, eDefTicketStatus status,
+        CancellationToken cancellationToken = default)
+    {
+        var ticket = await DbSet.FirstOrDefaultAsync(t => t.Id == ticketId, cancellationToken);
+        if (ticket != null)
+        {
+            ticket.Status = (short)status;
+            ticket.UpdatedAt = DateTime.Now;
+
+            DbSet.Update(ticket);
+            await Context.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public async Task<IEnumerable<Tickets>> GetTicketsWithUnreadUserMessagesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var ticketsWithTechnicians = await (
+                from ticket in DbSet
+                join ticketUser in Context.TicketUsers
+                    on ticket.Id equals ticketUser.TicketId
+                where ticketUser.DefTicketUserRoleId == (short)eDefTicketUserRoles.Responder &&
+                      (ticket.Status == (short)eDefTicketStatus.InProgress ||
+                       ticket.Status == (short)eDefTicketStatus.New)
+                select ticket
+            ).Include(t => t.CreatedBy)
+            .Include(t => t.TicketUsers)
+            .ToListAsync(cancellationToken);
+
+        return ticketsWithTechnicians;
     }
 }

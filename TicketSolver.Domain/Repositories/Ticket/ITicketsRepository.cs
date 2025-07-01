@@ -1,3 +1,4 @@
+using TicketSolver.Domain.Enums;
 using TicketSolver.Domain.Models;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 
@@ -10,7 +11,8 @@ public interface ITicketsRepository : IRepositoryBase<Tickets>
     Task<Tickets> AddAsync(Tickets ticket);
     Task<Tickets?> UpdateAsync(Tickets ticket);
     Task DeleteAsync(Tickets ticket);
-
+    Task UpdateStatusAsync(int ticketId, eDefTicketStatus status, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Tickets>> GetTicketsWithUnreadUserMessagesAsync(CancellationToken cancellationToken = default);
     Task<PaginatedResponse<Tickets>> GetAllByUserAsync(CancellationToken cancellationToken, string userId, PaginatedQuery paginatedQuery);
     
     Task<PaginatedResponse<Tickets>> GetAllByTechAsync(CancellationToken cancellationToken, string techId, PaginatedQuery paginatedQuery);

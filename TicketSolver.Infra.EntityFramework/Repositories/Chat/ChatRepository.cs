@@ -43,21 +43,39 @@ public class ChatRepository(EfContext context) : EFRepositoryBase<TicketChat>(co
                 UpdatedAt    = DateTime.Now
             };
 
-            await DbSet.AddAsync(chat);
+            await DbSet.AddAsync(chat, cancellationToken);
             await Context.SaveChangesAsync(cancellationToken);
+        
+            // Recarregar o chat após criação
+            chat = await GetChatByTicketIdAsync(ticketId, cancellationToken);
         }
 
-        // Adicionar nova mensagem
-        chat.Messages.Add(message);
-        chat.ChatHistory = JsonSerializer.Serialize(chat.Messages);
-        chat.TotalMessages  = chat.Messages.Count;
-        chat.LastMessageAt = message.Timestamp.Date.ToLocalTime();
+        // Debug: Verificar estado atual
+        Console.WriteLine($"=== DEBUG AddMessage ===");
+        Console.WriteLine($"Chat ID: {chat?.Id}");
+        Console.WriteLine($"ChatHistory antes: {chat?.ChatHistory}");
+        Console.WriteLine($"Messages.Count antes: {chat?.Messages?.Count}");
+
+        // Obter mensagens atuais e adicionar a nova
+        var currentMessages = chat?.Messages ?? new List<Message>();
+        currentMessages.Add(message);
+
+        // Atualizar propriedades
+        chat!.Messages = currentMessages; // Isso vai atualizar o ChatHistory via setter
+        chat.TotalMessages = currentMessages.Count;
+        chat.LastMessageAt = message.Timestamp;
         chat.UpdatedAt = DateTime.Now;
 
+        Console.WriteLine($"ChatHistory depois: {chat.ChatHistory}");
+        Console.WriteLine($"Messages.Count depois: {chat.Messages.Count}");
+        Console.WriteLine($"Nova mensagem: {message.text}");
+
+        // Salvar no banco
         DbSet.Update(chat);
         await Context.SaveChangesAsync(cancellationToken);
-        Console.WriteLine("Chat updated with new message.");
-        Console.WriteLine($" chat: {chat}");
+
+        Console.WriteLine("=== Mensagem salva ===");
+    
         return chat;
     }
 
@@ -73,7 +91,7 @@ public class ChatRepository(EfContext context) : EFRepositoryBase<TicketChat>(co
         chat.Messages = messages;
         chat.TotalMessages = messages.Count;
         chat.LastMessageAt = messages.LastOrDefault()?.Timestamp;
-        chat.UpdatedAt = DateTime.UtcNow;
+        chat.UpdatedAt = DateTime.Now;
 
         DbSet.Update(chat);
         await Context.SaveChangesAsync(cancellationToken);
@@ -130,7 +148,7 @@ public class ChatRepository(EfContext context) : EFRepositoryBase<TicketChat>(co
         if (hasChanges)
         {
             chat.Messages = messages;
-            chat.UpdatedAt = DateTime.UtcNow;
+            chat.UpdatedAt = DateTime.Now;
             
             DbSet.Update(chat);
             await Context.SaveChangesAsync(cancellationToken);
@@ -180,7 +198,7 @@ public class ChatRepository(EfContext context) : EFRepositoryBase<TicketChat>(co
                 TotalMessages = 0,
                 UnreadMessages = 0,
                 LastMessageAt = null,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 LastSenderType = string.Empty,
                 LastSenderName = string.Empty
             };
@@ -212,7 +230,7 @@ public class ChatRepository(EfContext context) : EFRepositoryBase<TicketChat>(co
             existingChat.TotalMessages = chat.TotalMessages;
             existingChat.LastMessageAt = chat.LastMessageAt;
             existingChat.IsArchived = chat.IsArchived;
-            existingChat.UpdatedAt = DateTime.UtcNow;
+            existingChat.UpdatedAt = DateTime.Now;
             DbSet.Update(existingChat);
             await Context.SaveChangesAsync(cancellationToken);
             return existingChat;
