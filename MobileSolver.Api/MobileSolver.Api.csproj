@@ -17,6 +17,7 @@
     <ItemGroup>
       <ProjectReference Include="..\MobileSolver.Application\MobileSolver.Application.csproj" />
       <ProjectReference Include="..\MobileSolver.Domain\MobileSolver.Domain.csproj" />
+      <ProjectReference Include="..\MobileSolver.Infra.EntityFramework\MobileSolver.Infra.EntityFramework.csproj" />
       <ProjectReference Include="..\TicketSolver.Domain\TicketSolver.Domain.csproj" />
       <ProjectReference Include="..\TicketSolver.Infra.EntityFramework\TicketSolver.Infra.EntityFramework.csproj" />
       <ProjectReference Include="..\TicketSolver.Infra.GeminiAI\TicketSolver.Infra.GeminiAI.csproj" />

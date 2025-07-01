@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using MobileSolver.Infra.EntityFramework.Persistence.Contexts;
 using TicketSolver.Domain.Settings;
-using TicketSolver.Infra.EntityFramework.Persistence.Contexts;
 using TicketSolver.Infra.EntityFramework.Persistence.Contexts.Interfaces;
 
 namespace MobileSolver.Api.Main;
@@ -14,7 +14,7 @@ public static class ConfigureDbConnection
         switch (DataBaseConnection.Provider)
         {
             case "MSSQL":
-                services.AddDbContext<IEfContext, EfContext>(options =>
+                services.AddDbContext<IEfContext, AppDbContext>(options =>
                     options.UseSqlServer(sqlConnectionString,
                         sqlServerOptionsAction: sqlOptions =>
                         {
@@ -27,14 +27,14 @@ public static class ConfigureDbConnection
                 break;
         
             case "MYSQL":
-                services.AddDbContext<IEfContext, EfContext>(options =>
+                services.AddDbContext<IEfContext, AppDbContext>(options =>
                 {
                     if (sqlConnectionString != null) options.UseMySQL(sqlConnectionString);
                 });
                 break;
         
             case "POSTGRESS":
-                services.AddDbContext<IEfContext, EfContext>(options =>
+                services.AddDbContext<IEfContext, AppDbContext>(options =>
                     options.UseNpgsql(sqlConnectionString,
                         npgsqlOptionsAction: sqlOptions =>
                         {
