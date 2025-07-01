@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using TicketSolver.Application.Actions.Ticket.Interfaces;
 using TicketSolver.Application.Exceptions.Ticket;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models;
@@ -18,6 +18,7 @@ public class BaseTicketsService(
     ITicketsRepository repo,
     IUsersRepository usersRepo,
     ITicketUsersRepository ticketUsersRepository,
+    ICreateTicketAction createTicketAction,
     ITicketsRepository ticketsRepository
 ) : ITicketsService
 {
@@ -48,8 +49,7 @@ public class BaseTicketsService(
 
         return ticketShorts;
     }
-
-
+    
     public Task<Tickets?> GetByIdAsync(int id)
     {
         return repo.GetById(id)
@@ -72,9 +72,9 @@ public class BaseTicketsService(
         t.DefUserSatisfactionId = (short)eDefUserSatisfaction.Neutral;
         t.CreatedAt = DateTime.Now;
         t.UpdatedAt = DateTime.Now;
-        return await repo.AddAsync(t);
+        return await createTicketAction.ExecuteAsync(t, default);
     }
-
+    
     public async Task<Tickets> UpdateAsync(TicketDTO ticket, int id)
     {
         Tickets updateAsync;
