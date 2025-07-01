@@ -19,6 +19,7 @@ public static class Startup
         ConfigureDependencies.Setup(builder.Services);
         ConfigureRepositories.Setup(builder.Services);
         ConfigureServices.Setup(builder.Services);
+        builder.Services.AddActions();
         SwaggerExtensions.AddSwagger(builder);
         builder.Services.Configure<StorageSettings>(builder.Configuration.GetSection("Storage"));
         builder.Services.ConfigureStorage(builder.Configuration);
