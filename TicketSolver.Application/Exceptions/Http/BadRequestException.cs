@@ -1,8 +1,10 @@
-﻿using System.Net;
+using System.Net;
 
-namespace TicketSolver.Api.Exceptions;
+namespace TicketSolver.Application.Exceptions.Http;
 
-public class BadRequestException(string message) : HttpException(message, HttpStatusCode.BadRequest)
+public class BadRequestException : HttpException
 {
-    
+    public BadRequestException(string message) : base(HttpStatusCode.BadRequest, message)
+    {
+    }
 }

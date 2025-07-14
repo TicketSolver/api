@@ -1,7 +1,10 @@
-﻿using System.Net;
+using System.Net;
 
-namespace TicketSolver.Api.Exceptions;
+namespace TicketSolver.Application.Exceptions.Http;
 
-public class NotFoundException(string message) : HttpException(message, HttpStatusCode.NotFound)
+public class NotFoundException : HttpException
 {
+    public NotFoundException(string message) : base(HttpStatusCode.NotFound, message)
+    {
+    }
 }

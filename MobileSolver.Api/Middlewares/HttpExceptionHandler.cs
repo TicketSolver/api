@@ -1,5 +1,5 @@
 ﻿using MobileSolver.Api.Models;
-using TicketSolver.Api.Exceptions;
+using TicketSolver.Application.Exceptions.Http;
 
 namespace MobileSolver.Api.Middlewares;
 

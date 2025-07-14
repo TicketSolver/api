@@ -1,4 +1,4 @@
-﻿// GroqClientTests.cs
+// GroqClientTests.cs
 
 using System;
 using Microsoft.Extensions.Configuration;
@@ -7,33 +7,20 @@ using System.Threading.Tasks;
 using GroqNet;
 using GroqNet.ChatCompletions;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace TicketSolver.Application.Tests;
 
 public class GroqClientTests
 {
-    private readonly GroqClient _client;
+    private readonly Mock<IGroqClient> _clientMock;
     
     public GroqClientTests()
     {
-        Env.Load();
-
-        var apiKey = 
-            new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .Build()["Ai:Groq:ApiKey"]
-            ?? Environment.GetEnvironmentVariable("Ai__Groq__ApiKey")
-            ?? throw new InvalidOperationException("API Key não encontrada");
-
-        // 1) Build a ServiceCollection just like your HostBuilder does
-        var services = new ServiceCollection();
-        services.AddHttpClient();
-        services.AddGroqClient(apiKey, GroqModel.LLaMA3_8b);
-
-        // 2) Build the provider and grab the client
-        var provider = services.BuildServiceProvider();
-        _client = provider.GetRequiredService<GroqClient>();
+        _clientMock = new Mock<IGroqClient>();
     }
     [Fact]
     public async Task CreateCompletionAsync_WithValidPrompt_ReturnsValidResponse()
@@ -47,13 +34,47 @@ public class GroqClientTests
             new GroqMessage(prompt)
         };
 
+        var chatResult = new GroqChatCompletions
+        {
+            Id = "test-id",
+            Object = "test-object",
+            Created = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            Model = "test-model",
+            SystemFingerprint = "test-fingerprint",
+            Usage = new GroqUsage
+            {
+                PromptTokens = 1,
+                CompletionTokens = 1,
+                TotalTokens = 2,
+                PromptTime = 0.1M,
+                CompletionTime = 0.1M,
+                TotalTime = 0.2M
+            },
+            XGroq = new() { Id = "test-id" },
+            Choices = new List<GroqChoice>
+            {
+                new GroqChoice
+                {
+                    Index = 0,
+                    FinishReason = "stop",
+                    Message = new GroqMessage
+                    {
+                        Content = "Test response"
+                    }
+                }
+            }
+        };
+
+        _clientMock.Setup(x => x.GetChatCompletionsAsync(history, null, CancellationToken.None))
+            .ReturnsAsync(chatResult);
+
         // 3) Act
-        var chatResult = await _client.GetChatCompletionsAsync(history);
+        var result = await _clientMock.Object.GetChatCompletionsAsync(history, null, CancellationToken.None);
 
         // 4) Assert
-        Assert.NotNull(chatResult);
-        Assert.NotNull(chatResult.Choices);
-        Assert.NotEmpty(chatResult.Choices);
-        Assert.False(string.IsNullOrWhiteSpace(chatResult.Choices[0].Message.Content));
+        Assert.NotNull(result);
+        Assert.NotNull(result.Choices);
+        Assert.NotEmpty(result.Choices);
+        Assert.False(string.IsNullOrWhiteSpace(result.Choices[0].Message.Content));
     }
 }
