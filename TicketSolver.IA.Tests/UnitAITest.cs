@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -8,9 +7,9 @@ using TicketSolver.Api.Controllers;
 using TicketSolver.Api.Models;
 using TicketSolver.Application.Services.ChatAI.Interface;
 using Xunit;
-using GroqNet;                      // para GroqChatHistory
+using GroqNet;
 using GroqNet.ChatCompletions;
-using TicketSolver.Application.Models.Chat; // caso seu controller inclua esse namespace
+using TicketSolver.Application.Models.Chat;
 
 namespace TicketSolver.IA.Tests
 {
@@ -29,7 +28,6 @@ namespace TicketSolver.IA.Tests
         public async Task Ask_EmptyPrompt_ReturnsBadRequest()
         {
             // Arrange
-            // record ChatRequest(Guid? ConversationId, string Prompt, string? SystemPrompt)
             var request = new ChatRequest(
                 ConversationId: null,
                 Prompt:         "   ",
@@ -37,11 +35,14 @@ namespace TicketSolver.IA.Tests
             );
 
             // Act
-            var result = await _controller.Ask(request, CancellationToken.None);
+            IActionResult actionResult = await _controller.Ask(request, CancellationToken.None);
 
             // Assert
-            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("O campo 'Prompt' não pode estar vazio.", badRequest.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(actionResult);
+            var response   = Assert.IsType<BaseResponse<object>>(badRequest.Value);
+
+            Assert.Equal("O campo 'Prompt' não pode estar vazio.", response.Message);
+            Assert.False(response.Success);
         }
 
         [Fact(DisplayName = "Ask: prompt válido deve chamar o serviço e retornar Ok")]
@@ -56,9 +57,8 @@ namespace TicketSolver.IA.Tests
                 SystemPrompt:  "Você é XY"
             );
 
-            // desambiguamos aqui usando a sobrecarga genérica
             _mockChatService
-                .Setup<Task<string>>(s => s.AskAsync(
+                .Setup(s => s.AskAsync(
                     It.IsAny<GroqChatHistory>(),
                     request.Prompt,
                     request.SystemPrompt
@@ -69,11 +69,14 @@ namespace TicketSolver.IA.Tests
             var actionResult = await _controller.Ask(request, CancellationToken.None);
 
             // Assert
-            var okModel = Assert.IsType<OkObjectResult>(actionResult);
-            var dto     = Assert.IsType<ChatResponse>(okModel.Value);
+            var okResult = Assert.IsType<OkObjectResult>(actionResult);
+            var response = Assert.IsType<BaseResponse<object>>(okResult.Value);
 
-            Assert.Equal(convId,         dto.ConversationId);
-            Assert.Equal(fakeReply,      dto.Reply);
+            // Extrai e valida o Data como ChatResponse
+            var data = Assert.IsType<ChatResponse>(response.Data);
+            Assert.Equal(convId,    data.ConversationId);
+            Assert.Equal(fakeReply, data.Reply);
+
             _mockChatService.Verify(s => s.AskAsync(
                 It.IsAny<GroqChatHistory>(),
                 request.Prompt,
@@ -93,7 +96,7 @@ namespace TicketSolver.IA.Tests
             );
 
             _mockChatService
-                .Setup<Task<string>>(s => s.AskAsync(
+                .Setup(s => s.AskAsync(
                     It.IsAny<GroqChatHistory>(),
                     request.Prompt,
                     (string?)null
@@ -104,11 +107,14 @@ namespace TicketSolver.IA.Tests
             var actionResult = await _controller.Ask(request, CancellationToken.None);
 
             // Assert
-            var okModel = Assert.IsType<OkObjectResult>(actionResult);
-            var dto     = Assert.IsType<ChatResponse>(okModel.Value);
+            var okResult = Assert.IsType<OkObjectResult>(actionResult);
+            var response = Assert.IsType<BaseResponse<object>>(okResult.Value);
 
-            Assert.NotEqual(Guid.Empty, dto.ConversationId);
-            Assert.Equal(fakeReply,      dto.Reply);
+            // Extrai e valida o Data como ChatResponse
+            var data = Assert.IsType<ChatResponse>(response.Data);
+            Assert.NotEqual(Guid.Empty, data.ConversationId);
+            Assert.Equal(fakeReply,      data.Reply);
+
             _mockChatService.Verify(s => s.AskAsync(
                 It.IsAny<GroqChatHistory>(),
                 request.Prompt,
