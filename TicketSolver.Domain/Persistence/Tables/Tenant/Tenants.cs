@@ -4,6 +4,11 @@ using TicketSolver.Domain.Persistence.Tables.User;
 
 namespace TicketSolver.Domain.Persistence.Tables.Tenant;
 
+public enum ApplicationType
+{
+    Mobile,
+    Web,
+}
 public class Tenants : EntityDates
 {
     [Key] public int Id { get; set; }
@@ -16,6 +21,9 @@ public class Tenants : EntityDates
     [Column(TypeName = "uuid")]
     public Guid PublicKey { get; set; }
     public bool IsConfigured { get; set; }
+    
+    [Required]
+    public ApplicationType ApplicationType { get; set; }
 
     public ICollection<Users> Users { get; set; } = [];
 }
