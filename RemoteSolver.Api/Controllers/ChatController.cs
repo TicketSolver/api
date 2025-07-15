@@ -13,23 +13,12 @@ namespace RemoteSolver.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ChatController : ShellController
+public class ChatController(
+    IChatService service,
+    IChatAiService chatAiService,
+    EfContext db)
+    : ShellController
 {
-    private readonly IChatService _chatService;
-    private readonly IChatAiService _chatAiService;
-    private readonly EfContext _db;
-
-    public ChatController(
-        IChatService service,
-        IChatAiService chatAiService,
-        EfContext db
-    ) : base()
-    {
-        _chatService = service;
-        _chatAiService = chatAiService;
-        _db = db;
-    }
-
     [HttpPost("messages")]
     [Authorize(Roles = "1,2,3")]
     public async Task<ActionResult> SendMessage([
@@ -45,7 +34,7 @@ public class ChatController : ShellController
         if (userId is null)
             return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
 
-        if (!await _chatService.CanAccessChatAsync(request.TicketId, userId, userRole ?? "User", cancellationToken))
+        if (!await service.CanAccessChatAsync(request.TicketId, userId, userRole ?? "User", cancellationToken))
             return BadRequest((ApiResponse.Fail("Acesso negado ao chat deste ticket.")));
 
         request.SenderId = userId;
@@ -59,24 +48,24 @@ public class ChatController : ShellController
 
         try
         {
-            var chatInfo = await _chatService.GetChatInfoAsync(request.TicketId, cancellationToken);
+            var chatInfo = await service.GetChatInfoAsync(request.TicketId, cancellationToken);
             var isTransferredToTechnician =
-                await _chatService.IsTicketAssignedToTechnicianAsync(request.TicketId, cancellationToken);
+                await service.IsTicketAssignedToTechnicianAsync(request.TicketId, cancellationToken);
             if (userRole == "3" && isTransferredToTechnician)
             {
-                var response = await _chatService.SendDirectMessageAsync(request, cancellationToken);
+                var response = await service.SendDirectMessageAsync(request, cancellationToken);
                 return Ok(ApiResponse.Ok(response, "Mensagem enviada para o técnico!"));
             }
 
             if (userRole == "1" || userRole == "2")
             {
-                var response = await _chatService.SendDirectMessageAsync(request, cancellationToken);
+                var response = await service.SendDirectMessageAsync(request, cancellationToken);
                 return Ok(ApiResponse.Ok(response, "Mensagem enviada com sucesso!"));
             }
 
             if (userRole == "3")
             {
-                var history = await _chatService.GetChatHistoryAsync(
+                var history = await service.GetChatHistoryAsync(
                     request.TicketId,
                     page: 1,
                     pageSize: int.MaxValue,
@@ -86,15 +75,15 @@ public class ChatController : ShellController
                 var aiMessageCount = history.Messages.Count(m => m.SenderType == "assistant");
                 if (aiMessageCount >= 5)
                 {
-                    await _chatService.TransferToTechnicianAsync(request.TicketId, userId, cancellationToken);
+                    await service.TransferToTechnicianAsync(request.TicketId, userId, cancellationToken);
 
-                    var directResponse = await _chatService.SendDirectMessageAsync(request, cancellationToken);
+                    var directResponse = await service.SendDirectMessageAsync(request, cancellationToken);
 
                     return Ok(ApiResponse.Ok(directResponse,
                         "Limite de mensagens da IA atingido. Seu ticket foi transferido para um técnico que responderá em breve."));
                 }
 
-                var aiResponse = await _chatService.SendMessageAsync(request, cancellationToken);
+                var aiResponse = await service.SendMessageAsync(request, cancellationToken);
                 return Ok(ApiResponse.Ok(aiResponse, "Mensagem enviada com sucesso!"));
             }
 
@@ -116,7 +105,7 @@ public class ChatController : ShellController
     {
         try
         {
-            var pendingTickets = await _chatService.GetTicketsPendingTechnicianResponseAsync(cancellationToken);
+            var pendingTickets = await service.GetTicketsPendingTechnicianResponseAsync(cancellationToken);
             return Ok(ApiResponse.Ok(pendingTickets));
         }
         catch
@@ -138,12 +127,12 @@ public class ChatController : ShellController
         var userId = AuthenticatedUser.UserId;
         var userType = User.FindFirstValue(ClaimTypes.Role);
 
-        if (!await _chatService.CanAccessChatAsync(ticketId, userId, userType ?? "User", cancellationToken))
+        if (!await service.CanAccessChatAsync(ticketId, userId, userType ?? "User", cancellationToken))
             return BadRequest((ApiResponse.Fail("Acesso negado ao chat deste ticket.")));
 
         try
         {
-            var history = await _chatService.GetChatHistoryAsync(ticketId, page, pageSize, cancellationToken);
+            var history = await service.GetChatHistoryAsync(ticketId, page, pageSize, cancellationToken);
             return Ok(ApiResponse.Ok(history));
         }
         catch
@@ -191,10 +180,10 @@ public class ChatController : ShellController
         try
         {
             // Verificar se o ticket existe
-            var ticketExists = await _db.Tickets.AnyAsync(t => t.Id == ticketId);
+            var ticketExists = await db.Tickets.AnyAsync(t => t.Id == ticketId);
 
             // Buscar o ticket
-            var ticket = await _db.Tickets
+            var ticket = await db.Tickets
                 .Where(t => t.Id == ticketId)
                 .Select(t => new
                 {
@@ -206,7 +195,7 @@ public class ChatController : ShellController
                 .FirstOrDefaultAsync();
 
             // Verificar se está atribuído
-            var isAssigned = await _db.TicketUsers
+            var isAssigned = await db.TicketUsers
                 .AnyAsync(tu => tu.TicketId == ticketId && tu.UserId == userId);
 
             return Ok(new
@@ -243,7 +232,7 @@ public class ChatController : ShellController
     {
         try
         {
-            var chat = await _db.Chats
+            var chat = await db.Chats
                 .Where(c => c.TicketId == ticketId)
                 .FirstOrDefaultAsync();
 
@@ -284,7 +273,7 @@ public class ChatController : ShellController
         if (userId is null)
             return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
 
-        if (!await _chatService.CanAccessChatAsync(request.TicketId, userId, userType ?? "User", cancellationToken))
+        if (!await service.CanAccessChatAsync(request.TicketId, userId, userType ?? "User", cancellationToken))
             return Forbid(ApiResponse.Fail("Acesso negado ao chat deste ticket.").ToString());
 
         request.UserId = userId;
@@ -292,7 +281,7 @@ public class ChatController : ShellController
 
         try
         {
-            await _chatService.MarkMessagesAsReadAsync(request, cancellationToken);
+            await service.MarkMessagesAsReadAsync(request, cancellationToken);
             return Ok(ApiResponse.Ok("", "Mensagens marcadas como lidas."));
         }
         catch
@@ -311,18 +300,18 @@ public class ChatController : ShellController
         var userId = AuthenticatedUser.UserId;
         var userType = User.FindFirstValue(ClaimTypes.Role);
 
-        if (!await _chatService.CanAccessChatAsync(ticketId, userId, userType ?? "User", cancellationToken))
+        if (!await service.CanAccessChatAsync(ticketId, userId, userType ?? "User", cancellationToken))
             return BadRequest((ApiResponse.Fail("Acesso negado ao chat deste ticket.")));
 
         try
         {
-            var chatInfo = await _chatService.StartChatAsync(ticketId, cancellationToken);
+            var chatInfo = await service.StartChatAsync(ticketId, cancellationToken);
             if (chatInfo.SystemPrompt == "") return Ok(ApiResponse.Ok(null));
             var history = new GroqChatHistory();
-            var initialReply = await _chatAiService.AskAsync(history, prompt: "Soluciona meu problema",
+            var initialReply = await chatAiService.AskAsync(history, prompt: "Soluciona meu problema",
                 systemPrompt: chatInfo.SystemPrompt);
 
-            var systemMsg = await _chatService.SendSystemMessageAsync(
+            var systemMsg = await service.SendSystemMessageAsync(
                 new SendSystemMessageRequestDto
                 {
                     TicketId = ticketId,
@@ -358,7 +347,7 @@ public class ChatController : ShellController
 
         try
         {
-            var chats = await _chatService.GetChatsWithUnreadMessagesAsync(userId, userType ?? "User",
+            var chats = await service.GetChatsWithUnreadMessagesAsync(userId, userType ?? "User",
                 cancellationToken);
             return Ok(ApiResponse.Ok(chats));
         }
@@ -375,7 +364,7 @@ public class ChatController : ShellController
     {
         try
         {
-            var chats = await _chatService.GetRecentChatsAsync(limit, cancellationToken);
+            var chats = await service.GetRecentChatsAsync(limit, cancellationToken);
             return Ok(ApiResponse.Ok(chats));
         }
         catch
@@ -390,7 +379,7 @@ public class ChatController : ShellController
     {
         try
         {
-            var statistics = await _chatService.GetChatStatisticsAsync(ticketId, cancellationToken);
+            var statistics = await service.GetChatStatisticsAsync(ticketId, cancellationToken);
             return Ok(ApiResponse.Ok(statistics));
         }
         catch
@@ -412,13 +401,13 @@ public class ChatController : ShellController
 
         if (userType == "3" && request.TicketId.HasValue)
         {
-            if (!await _chatService.CanAccessChatAsync(request.TicketId.Value, userId, "User", cancellationToken))
+            if (!await service.CanAccessChatAsync(request.TicketId.Value, userId, "User", cancellationToken))
                 return Forbid(ApiResponse.Fail("Acesso negado.").ToString());
         }
 
         try
         {
-            var messages = await _chatService.SearchMessagesAsync(request, cancellationToken);
+            var messages = await service.SearchMessagesAsync(request, cancellationToken);
             return Ok(ApiResponse.Ok(messages));
         }
         catch
@@ -437,12 +426,12 @@ public class ChatController : ShellController
         if (userId is null)
             return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
 
-        if (!await _chatService.CanAccessChatAsync(ticketId, userId, userType ?? "User", cancellationToken))
+        if (!await service.CanAccessChatAsync(ticketId, userId, userType ?? "User", cancellationToken))
             return Forbid(ApiResponse.Fail("Acesso negado.").ToString());
 
         try
         {
-            var count = await _chatService.GetUnreadMessageCountAsync(ticketId, userId, userType ?? "User",
+            var count = await service.GetUnreadMessageCountAsync(ticketId, userId, userType ?? "User",
                 cancellationToken);
             return Ok(ApiResponse.Ok(new { unreadCount = count }));
         }
@@ -458,7 +447,7 @@ public class ChatController : ShellController
     {
         try
         {
-            var participants = await _chatService.GetChatParticipantsAsync(ticketId, cancellationToken);
+            var participants = await service.GetChatParticipantsAsync(ticketId, cancellationToken);
             return Ok(ApiResponse.Ok(participants));
         }
         catch
@@ -474,7 +463,7 @@ public class ChatController : ShellController
     {
         try
         {
-            var response = await _chatService.SendSystemMessageAsync(request, cancellationToken);
+            var response = await service.SendSystemMessageAsync(request, cancellationToken);
             return Ok(ApiResponse.Ok(response, "Mensagem do sistema enviada com sucesso!"));
         }
         catch (ArgumentException ex)
@@ -497,7 +486,7 @@ public class ChatController : ShellController
 
         try
         {
-            var summary = await _chatService.GetChatActivitySummaryAsync(startDate, endDate, cancellationToken);
+            var summary = await service.GetChatActivitySummaryAsync(startDate, endDate, cancellationToken);
             return Ok(ApiResponse.Ok(summary));
         }
         catch
@@ -513,7 +502,7 @@ public class ChatController : ShellController
     {
         try
         {
-            await _chatService.ArchiveChatAsync(ticketId, isArchived, cancellationToken);
+            await service.ArchiveChatAsync(ticketId, isArchived, cancellationToken);
             var message = isArchived ? "Chat arquivado com sucesso!" : "Chat desarquivado com sucesso!";
             return Ok(ApiResponse.Ok("", message));
         }
@@ -537,13 +526,13 @@ public class ChatController : ShellController
         if (userId is null)
             return BadRequest(ApiResponse.Fail("Usuário não autenticado."));
 
-        if (!await _chatService.CanAccessChatAsync(ticketId, userId, userType ?? "User", cancellationToken) &&
+        if (!await service.CanAccessChatAsync(ticketId, userId, userType ?? "User", cancellationToken) &&
             userType == "3")
             return Forbid(ApiResponse.Fail("Acesso negado.").ToString());
 
         try
         {
-            var info = await _chatService.GetChatInfoAsync(ticketId, cancellationToken);
+            var info = await service.GetChatInfoAsync(ticketId, cancellationToken);
             return Ok(ApiResponse.Ok(info));
         }
         catch
