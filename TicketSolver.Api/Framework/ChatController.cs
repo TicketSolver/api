@@ -2,7 +2,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TicketSolver.Application.Models;
-using TicketSolver.Application.Services.Chat.Interfaces;
+using TicketSolver.Application.Services.Tenant.Interfaces;
+using TicketSolver.Domain.Persistence.Tables.Tenant;
 using TicketSolver.Framework.Application;
 using TicketSolver.Framework.Domain;
 
@@ -14,11 +15,13 @@ public class ChatController : ControllerBase
 {
     private readonly IChatService _chatService;
     private readonly IAiContextRepository _repo;
+    private readonly ITenantsService    _tenantsService;
 
-    public ChatController(IChatService chatService, IAiContextRepository repo)
+    public ChatController(IChatService chatService, IAiContextRepository repo,ITenantsService tenantsService)
     {
         _chatService = chatService;
         _repo = repo;
+        _tenantsService  = tenantsService;
     }
 
     [HttpPost("start")]
@@ -30,14 +33,25 @@ public class ChatController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("context/{tenant}")]
+    [HttpPost("context/{tenantKey:guid}")]
     public async Task<IActionResult> AddAiContextAsync(
-        string tenant,
+        Guid tenantKey,
         [FromBody] string systemPrompt,
         CancellationToken cancellationToken)
     {
-        var context = new AiContext(systemPrompt);
-        await _repo.AddAiContext(cancellationToken, context, new Tenant(tenant));
+        // 1) Busca o tenant completo
+        var tenant = await _tenantsService
+            .GetTenantByKeyAsync(tenantKey, cancellationToken);
+
+        if (tenant is null)
+            return NotFound($"Tenant '{tenantKey}' não encontrado.");
+
+        // 2) Cria o contexto de AI
+        var aiContext = new AiContext(systemPrompt);
+
+        // 3) Persiste vinculado à entidade carregada
+        await _repo.AddAiContext(cancellationToken, aiContext, tenant);
+
         return Ok();
     }
 }

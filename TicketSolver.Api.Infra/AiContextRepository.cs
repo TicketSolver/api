@@ -1,21 +1,26 @@
 using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
+using TicketSolver.Domain.Persistence.Tables.Tenant;
 using TicketSolver.Framework.Domain;
 
-namespace TicketSolver.Api.Infra;
-
-public class AiContextRepository : IAiContextRepository
+namespace TicketSolver.Api.Infra
 {
-    private readonly ConcurrentDictionary<string, AiContext> _storage = new();
-
-    public Task<AiContext?> GetContext(CancellationToken cancellationToken, Tenant tenant)
+    public class AiContextRepository : IAiContextRepository
     {
-        _storage.TryGetValue(tenant.Id, out var ctx);
-        return Task.FromResult(ctx);
-    }
+        
+        private readonly ConcurrentDictionary<int, AiContext> _storage = new();
 
-    public Task AddAiContext(CancellationToken cancellationToken, AiContext context, Tenant tenant)
-    {
-        _storage[tenant.Id] = context;
-        return Task.CompletedTask;
+        public Task<AiContext?> GetContext(CancellationToken cancellationToken, Tenants tenant)
+        {
+            _storage.TryGetValue(tenant.Id, out var ctx);
+            return Task.FromResult(ctx);
+        }
+
+        public Task AddAiContext(CancellationToken cancellationToken, AiContext context, Tenants tenant)
+        {
+            _storage[tenant.Id] = context;
+            return Task.CompletedTask;
+        }
     }
 }

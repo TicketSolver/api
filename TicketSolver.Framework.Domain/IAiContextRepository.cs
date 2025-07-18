@@ -1,7 +1,9 @@
+using TicketSolver.Domain.Persistence.Tables.Tenant;
+
 namespace TicketSolver.Framework.Domain;
 
 public interface IAiContextRepository
 {
-    Task<AiContext?> GetContext(CancellationToken cancellationToken, Tenant tenant);
-    Task AddAiContext(CancellationToken cancellationToken, AiContext context, Tenant tenant);
+    Task<AiContext?> GetContext(CancellationToken cancellationToken, Tenants tenant);
+    Task AddAiContext(CancellationToken cancellationToken, AiContext context, Tenants tenant);
 }

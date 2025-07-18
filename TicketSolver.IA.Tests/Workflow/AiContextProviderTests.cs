@@ -1,67 +1,88 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using TicketSolver.Api.Application;
-using TicketSolver.Api.Application.Interfaces;
-using TicketSolver.Domain.Persistence.Tables.Tenant;
-using TicketSolver.Framework.Domain;
 using Xunit;
+using Microsoft.AspNetCore.Mvc;
+using TicketSolver.Api.Application;
+using TicketSolver.Framework.Application;
+using TicketSolver.Framework.Domain;
+using TicketSolver.Application.Models;
+using TicketSolver.Api.Framework;
+using TicketSolver.Api.Application.Interfaces;
+using TicketSolver.Application.Ports;
+using TicketSolver.Application.Services.Tenant.Interfaces;
+using TicketSolver.Domain.Persistence.Tables.Tenant;
 
-namespace TicketSolver.IA.Tests.Workflow;
-
-public class AiContextProviderTests
+namespace TicketSolver.IA.Tests.Workflow
 {
-    [Fact]
-    public async Task GetAiContext_ContextExists_ReturnsFromRepository()
+    public class AiContextProviderTests
     {
-        // Arrange
-        var tenant = new Tenants("web");
-        var existing = new AiContext("prompt");
+        [Fact]
+        public async Task GetAiContext_ContextExists_ReturnsFromRepository()
+        {
+            // Arrange
+            var tenant = new Tenants { ApplicationType = ApplicationType.Web };
+            var existing = new AiContext("repo-prompt");
 
-        var repo = new Mock<IAiContextRepository>();
-        repo.Setup(r => r.GetContext(It.IsAny<CancellationToken>(), tenant))
-            .ReturnsAsync(existing);
+            var repo = new Mock<IAiContextRepository>();
+            repo.Setup(r => r.GetContext(
+                    It.IsAny<CancellationToken>(),
+                    It.Is<Tenants>(t => t.ApplicationType == ApplicationType.Web)
+                ))
+                .ReturnsAsync(existing);
 
-        var external = new Mock<IExternalInfoService>();
+            var external = new Mock<IExternalInfoService>();
 
-        var provider = new AiContextProvider(repo.Object, external.Object);
+            var provider = new AiContextProvider(repo.Object, external.Object);
 
-        // Act
-        var result = await provider.GetAiContext(tenant, CancellationToken.None);
+            // Act
+            var result = await provider.GetAiContext(tenant, CancellationToken.None);
 
-        // Assert
-        Assert.Equal(existing, result);
-        external.Verify(e => e.GetContext(It.IsAny<CancellationToken>(), It.IsAny<Tenant>()), Times.Never);
-        repo.Verify(r => r.AddAiContext(It.IsAny<CancellationToken>(), It.IsAny<AiContext>(), It.IsAny<Tenant>()), Times.Never);
-    }
+            // Assert
+            Assert.Equal(existing, result);
+            external.Verify(e => e.GetContext(It.IsAny<CancellationToken>(), It.IsAny<Tenants>()), Times.Never);
+            repo.Verify(r => r.AddAiContext(It.IsAny<CancellationToken>(), It.IsAny<AiContext>(), It.IsAny<Tenants>()), Times.Never);
+        }
 
-    [Fact]
-    public async Task GetAiContext_ContextMissing_FetchesAndStores()
-    {
-        // Arrange
-        var tenant = new Tenants("mobile");
-        var externalCtx = new AiContextProvider("external");
+        [Fact]
+        public async Task GetAiContext_ContextMissing_FetchesAndStores()
+        {
+            // Arrange
+            var tenant = new Tenants { ApplicationType = ApplicationType.Mobile };
+            var externalCtx = new AiContext("external-prompt");
 
-        var repo = new Mock<IAiContextRepository>();
-        repo.Setup(r => r.GetContext(It.IsAny<CancellationToken>(), tenant))
-            .ReturnsAsync((AiContext?)null);
-        repo.Setup(r => r.AddAiContext(It.IsAny<CancellationToken>(), externalCtx, tenant))
-            .Returns(Task.CompletedTask)
-            .Verifiable();
+            var repo = new Mock<IAiContextRepository>();
+            repo.Setup(r => r.GetContext(
+                    It.IsAny<CancellationToken>(),
+                    It.Is<Tenants>(t => t.ApplicationType == ApplicationType.Mobile)
+                ))
+                .ReturnsAsync((AiContext?)null);
+            repo.Setup(r => r.AddAiContext(
+                    It.IsAny<CancellationToken>(),
+                    externalCtx,
+                    It.Is<Tenants>(t => t.ApplicationType == ApplicationType.Mobile)
+                ))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
 
-        var external = new Mock<IExternalInfoService>();
-        external.Setup(e => e.GetContext(It.IsAny<CancellationToken>(), tenant))
-            .ReturnsAsync(externalCtx)
-            .Verifiable();
+            var external = new Mock<IExternalInfoService>();
+            external.Setup(e => e.GetContext(
+                    It.IsAny<CancellationToken>(),
+                    It.Is<Tenants>(t => t.ApplicationType == ApplicationType.Mobile)
+                ))
+                .ReturnsAsync(externalCtx)
+                .Verifiable();
 
-        var provider = new AiContextProvider(repo.Object, external.Object);
+            var provider = new AiContextProvider(repo.Object, external.Object);
 
-        // Act
-        var result = await provider.GetAiContext(tenant, CancellationToken.None);
+            // Act
+            var result = await provider.GetAiContext(tenant, CancellationToken.None);
 
-        // Assert
-        Assert.Equal(externalCtx, result);
-        external.Verify();
-        repo.Verify();
+            // Assert
+            Assert.Equal(externalCtx, result);
+            external.Verify();
+            repo.Verify();
+        }
     }
 }

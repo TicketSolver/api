@@ -1,26 +1,24 @@
-using TicketSolver.Framework.Domain;
+using System.Threading;
+using System.Threading.Tasks;
 using TicketSolver.Api.Application.Interfaces;
 using TicketSolver.Api.Infra.SystemPrompts;
 using TicketSolver.Domain.Persistence.Tables.Tenant;
+using TicketSolver.Framework.Domain;
 
-namespace TicketSolver.Api.Infra;
-
-public class ExternalInfoService : IExternalInfoService
+namespace TicketSolver.Api.Infra
 {
-    public Task<AiContext> GetContext(CancellationToken cancellationToken, Tenants tenant)
+    public class ExternalInfoService : IExternalInfoService
     {
-        var prompt = tenant.ApplicationType switch
+        public Task<AiContext> GetContext(CancellationToken cancellationToken, Tenants tenant)
         {
-            ApplicationType.Mobile     => MobileSystemPrompt.Text,
-            ApplicationType.Web        => WebSystemPrompt.Text,
-            _                           => EnterpriseSystemPrompt.Text
-        };
+            var prompt = tenant.ApplicationType switch
+            {
+                ApplicationType.Mobile     => MobileSystemPrompt.Text,
+                ApplicationType.Web        => WebSystemPrompt.Text,
+                ApplicationType.Enterprise => EnterpriseSystemPrompt.Text
+            };
 
-        return Task.FromResult(new AiContext(prompt));
-    }
-
-    public Task<AiContext> GetContext(CancellationToken cancellationToken, Tenant tenant)
-    {
-        throw new NotImplementedException();
+            return Task.FromResult(new AiContext(prompt));
+        }
     }
 }

@@ -6,9 +6,4 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\RemoteSolver.Domain\RemoteSolver.Domain.csproj" />
-      <ProjectReference Include="..\TicketSolver.Infra.EntityFramework\TicketSolver.Infra.EntityFramework.csproj" />
-    </ItemGroup>
-
 </Project>

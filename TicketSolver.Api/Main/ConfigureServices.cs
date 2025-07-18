@@ -22,7 +22,6 @@ using TicketSolver.Infra.GeminiAI;
 using TicketSolver.Api.Application;
 using TicketSolver.Api.Application.Interfaces;
 using TicketSolver.Api.Infra;
-using TicketSolver.Application.Services.Chat.Interfaces;
 using TicketSolver.Framework.Application;
 using TicketSolver.Framework.Domain;
 

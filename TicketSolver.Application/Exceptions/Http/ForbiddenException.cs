@@ -1,10 +1,7 @@
 using System.Net;
 
-namespace TicketSolver.Application.Exceptions.Http;
+namespace TicketSolver.Api.Exceptions;
 
-public class ForbiddenException : HttpException
+public class ForbiddenException(string message) : HttpException(message, HttpStatusCode.Forbidden)
 {
-    public ForbiddenException(string message) : base(HttpStatusCode.Forbidden, message)
-    {
-    }
 }
