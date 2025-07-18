@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MobileSolver.Api.Models;
-using TicketSolver.Api.Exceptions;
+using TicketSolver.Application.Exceptions.Http;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models.Auth;
 using TicketSolver.Application.Services.Interfaces;

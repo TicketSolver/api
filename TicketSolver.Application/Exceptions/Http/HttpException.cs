@@ -1,17 +1,13 @@
-﻿using System.Net;
+using System.Net;
 
-namespace TicketSolver.Api.Exceptions;
+namespace TicketSolver.Application.Exceptions.Http;
 
 public class HttpException : Exception
 {
-    public HttpStatusCode HttpStatusCode { get; set; } = HttpStatusCode.InternalServerError;
+    public HttpStatusCode HttpStatusCode { get; }
 
-    protected HttpException(string? message) : base(message)
+    public HttpException(HttpStatusCode httpStatusCode, string message) : base(message)
     {
-    }
-
-    protected HttpException(string? message, HttpStatusCode statusCode) : base(message)
-    {
-        HttpStatusCode = statusCode;
+        HttpStatusCode = httpStatusCode;
     }
 }

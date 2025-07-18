@@ -41,7 +41,8 @@ namespace TicketSolver.IA.Tests
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("O campo 'Prompt' não pode estar vazio.", badRequest.Value);
+            var response = Assert.IsType<BaseResponse<object>>(badRequest.Value);
+            Assert.Equal("O campo 'Prompt' não pode estar vazio.", response.Message);
         }
 
         [Fact(DisplayName = "Ask: prompt válido deve chamar o serviço e retornar Ok")]
@@ -70,7 +71,8 @@ namespace TicketSolver.IA.Tests
 
             // Assert
             var okModel = Assert.IsType<OkObjectResult>(actionResult);
-            var dto     = Assert.IsType<ChatResponse>(okModel.Value);
+            var response = Assert.IsType<BaseResponse<object>>(okModel.Value);
+            var dto = Assert.IsType<ChatResponse>(response.Data);
 
             Assert.Equal(convId,         dto.ConversationId);
             Assert.Equal(fakeReply,      dto.Reply);
@@ -105,7 +107,8 @@ namespace TicketSolver.IA.Tests
 
             // Assert
             var okModel = Assert.IsType<OkObjectResult>(actionResult);
-            var dto     = Assert.IsType<ChatResponse>(okModel.Value);
+            var response = Assert.IsType<BaseResponse<object>>(okModel.Value);
+            var dto = Assert.IsType<ChatResponse>(response.Data);
 
             Assert.NotEqual(Guid.Empty, dto.ConversationId);
             Assert.Equal(fakeReply,      dto.Reply);

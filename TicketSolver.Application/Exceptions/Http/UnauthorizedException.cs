@@ -1,7 +1,10 @@
-﻿using System.Net;
+using System.Net;
 
-namespace TicketSolver.Api.Exceptions;
+namespace TicketSolver.Application.Exceptions.Http;
 
-public class UnauthorizedException(string message) : HttpException(message, HttpStatusCode.Unauthorized)
+public class UnauthorizedException : HttpException
 {
+    public UnauthorizedException(string message) : base(HttpStatusCode.Unauthorized, message)
+    {
+    }
 }

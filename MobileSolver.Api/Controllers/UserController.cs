@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MobileSolver.Api.Models;
-using TicketSolver.Api.Exceptions;
+using TicketSolver.Application.Exceptions.Http;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models.User;
 using TicketSolver.Application.Services.User.Interfaces;

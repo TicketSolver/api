@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using TicketSolver.Api.Exceptions;
+using TicketSolver.Application.Exceptions.Http;
 using TicketSolver.Api.Models;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models.Auth;
