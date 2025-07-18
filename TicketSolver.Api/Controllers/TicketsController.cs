@@ -4,7 +4,7 @@ using TicketSolver.Api.Models;
 using TicketSolver.Application.Services.Ticket.Interfaces;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using System.Security.Claims;
-using TicketSolver.Application.Exceptions.Http;
+using TicketSolver.Api.Exceptions;
 using TicketSolver.Application.Exceptions.Ticket;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models;

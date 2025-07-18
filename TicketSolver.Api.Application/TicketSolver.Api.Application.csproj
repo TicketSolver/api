@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TicketSolver.Framework.Application\TicketSolver.Framework.Application.csproj" />
+    <ProjectReference Include="..\TicketSolver.Framework.Domain\TicketSolver.Framework.Domain.csproj" />
+  </ItemGroup>
+</Project>

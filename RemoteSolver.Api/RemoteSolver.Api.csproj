@@ -7,21 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetEnv" Version="3.1.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.4" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.3" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.1" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\RemoteSolver.Application\RemoteSolver.Application.csproj" />
-      <ProjectReference Include="..\RemoteSolver.Domain\RemoteSolver.Domain.csproj" />
-      <ProjectReference Include="..\TicketSolver.Application\TicketSolver.Application.csproj" />
-      <ProjectReference Include="..\TicketSolver.Domain\TicketSolver.Domain.csproj" />
-      <ProjectReference Include="..\TicketSolver.Infra.EntityFramework\TicketSolver.Infra.EntityFramework.csproj" />
-      <ProjectReference Include="..\TicketSolver.Infra.GeminiAI\TicketSolver.Infra.GeminiAI.csproj" />
-      <ProjectReference Include="..\TicketSolver.Infra.Storage\TicketSolver.Infra.Storage.csproj" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2"/>
     </ItemGroup>
 
 </Project>
