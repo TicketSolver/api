@@ -7,8 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TicketSolver.Api.Tests\TicketSolver.Api.Tests.csproj" />
-      <ProjectReference Include="..\TicketSolver.Domain.Tests\TicketSolver.Domain.Tests.csproj" />
       <ProjectReference Include="..\TicketSolver.Domain\TicketSolver.Domain.csproj" />
     </ItemGroup>
 

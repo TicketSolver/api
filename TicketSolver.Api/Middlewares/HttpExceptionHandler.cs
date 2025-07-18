@@ -1,4 +1,4 @@
-﻿using TicketSolver.Api.Exceptions;
+﻿using TicketSolver.Application.Exceptions.Http;
 using TicketSolver.Api.Models;
 
 namespace TicketSolver.Api.Middlewares;

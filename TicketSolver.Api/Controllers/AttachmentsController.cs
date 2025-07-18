@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TicketSolver.Api.Exceptions;
+using TicketSolver.Application.Exceptions.Http;
 using TicketSolver.Api.Models;
 using TicketSolver.Application.Exceptions.Ticket;
 using TicketSolver.Application.Models.Storage;
