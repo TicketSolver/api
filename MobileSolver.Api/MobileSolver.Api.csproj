@@ -21,6 +21,7 @@
       <ProjectReference Include="..\TicketSolver.Domain\TicketSolver.Domain.csproj" />
       <ProjectReference Include="..\TicketSolver.Infra.EntityFramework\TicketSolver.Infra.EntityFramework.csproj" />
       <ProjectReference Include="..\TicketSolver.Infra.GeminiAI\TicketSolver.Infra.GeminiAI.csproj" />
+      <ProjectReference Include="..\TicketSolver.Infra.Notifications\TicketSolver.Infra.Notifications.csproj" />
       <ProjectReference Include="..\TicketSolver.Infra.Storage\TicketSolver.Infra.Storage.csproj" />
     </ItemGroup>
 

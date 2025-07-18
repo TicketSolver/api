@@ -9,6 +9,7 @@
     <ItemGroup>
       <ProjectReference Include="..\MobileSolver.Domain\MobileSolver.Domain.csproj" />
       <ProjectReference Include="..\TicketSolver.Application\TicketSolver.Application.csproj" />
+      <ProjectReference Include="..\TicketSolver.Infra.Notifications\TicketSolver.Infra.Notifications.csproj" />
     </ItemGroup>
 
 </Project>

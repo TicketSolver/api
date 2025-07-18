@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TicketSolver.Application.Actions.Ticket.Interfaces;
+using TicketSolver.Application.Actions.Users.Interfaces;
 using TicketSolver.Application.Exceptions.Ticket;
 using TicketSolver.Application.Exceptions.Users;
 using TicketSolver.Application.Models;
@@ -19,7 +20,9 @@ public class BaseTicketsService<TTickets>(
     IUsersRepository usersRepo,
     ITicketUsersRepository ticketUsersRepository,
     ICreateTicketAction<TTickets> createTicketAction,
-    ITicketsRepository<TTickets> ticketsRepository
+    ITicketsRepository<TTickets> ticketsRepository,
+    INotifyUserAction<TTickets> notifyUserAction,
+    INotifyTechcnicianAction<TTickets> notifyTechcnicianAction
 ) : ITicketsService<TTickets> where TTickets : Tickets, new()
 {
     public async Task<IEnumerable<TicketShort>> GetAllAsync()
@@ -71,6 +74,8 @@ public class BaseTicketsService<TTickets>(
         ticket.DefUserSatisfactionId = (short)eDefUserSatisfaction.Neutral;
         ticket.CreatedAt = DateTime.Now;
         ticket.UpdatedAt = DateTime.Now;
+
+        await notifyTechcnicianAction.ExecuteAsync(ticket, default);
         
         return await createTicketAction.ExecuteAsync(ticket, ticketDto, default);
     }
@@ -97,6 +102,8 @@ public class BaseTicketsService<TTickets>(
             existing.DefTicketPriorityId = newTicket.DefTicketPriorityId;
             existing.DefTicketCategoryId = newTicket.DefTicketCategoryId;
             existing.UpdatedAt = DateTime.Now;
+            
+            await notifyUserAction.ExecuteAsync(existing, default);
             updateAsync = await repo.UpdateAsync(existing) ?? new TTickets();
         }
         catch (TicketException e)
