@@ -1,6 +1,8 @@
 using GroqNet;
 using GroqNet.ChatCompletions;
+using MobileSolver.Application.Actions;
 using MobileSolver.Domain.Persistence.Entities;
+using TicketSolver.Application.Actions.Users.Interfaces;
 using TicketSolver.Application.Ports;
 using TicketSolver.Application.Services;
 using TicketSolver.Application.Services.admin;
@@ -19,6 +21,7 @@ using TicketSolver.Application.Services.Ticket.Interfaces;
 using TicketSolver.Application.Services.User;
 using TicketSolver.Application.Services.User.Interfaces;
 using TicketSolver.Infra.GeminiAI;
+using TicketSolver.Infra.Notifications.Extensions;
 
 namespace MobileSolver.Api.Main;
 
@@ -37,7 +40,8 @@ public static class ConfigureServices
         services.AddTransient<IChatAiService, AiChatService>();
         services.AddTransient<IServiceRequestService, ServiceRequestService>();
 
-
+        services.AddEmailSenderService();
+        
         services.AddHttpClient("Groq");
 
         services.AddTransient<GroqClient>(sp =>
@@ -51,4 +55,10 @@ public static class ConfigureServices
             return new GroqClient(apiKey, model, httpClient, logger);
         });
     }
+
+    private static void ConfigureActions(IServiceCollection services)
+    {
+        services.AddTransient<INotifyUserAction<MobileTickets>, NotifyUserAction>();
+        services.AddTransient<INotifyTechcnicianAction<MobileTickets>, NotifyTechnicianAction>();
+    } 
 }
