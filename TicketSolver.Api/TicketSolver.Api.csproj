@@ -35,7 +35,7 @@
       <ProjectReference Include="..\TicketSolver.Infra.Storage\TicketSolver.Infra.Storage.csproj" />
       <ProjectReference Include="..\TicketSolver.Framework.Application\TicketSolver.Framework.Application.csproj" />
       <ProjectReference Include="..\TicketSolver.Framework.Domain\TicketSolver.Framework.Domain.csproj" />
-      <ProjectReference Include="..\TicketSolver.Api.Application\TicketSolver.Api.Application.csproj" />
+      <ProjectReference Include="..\TicketSolver.Framework.AiContextProvider\TicketSolver.Framework.AiContextProvider.csproj" />
       <ProjectReference Include="..\TicketSolver.Api.Infra\TicketSolver.Api.Infra.csproj" />
   </ItemGroup>
 
