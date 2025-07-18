@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TicketSolver.Application.Models;
+using TicketSolver.Application.Services.Chat.Interfaces;
 using TicketSolver.Framework.Application;
 using TicketSolver.Framework.Domain;
 
