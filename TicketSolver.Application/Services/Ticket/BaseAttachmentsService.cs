@@ -10,19 +10,19 @@ using TicketSolver.Domain.Repositories.Ticket;
 
 namespace TicketSolver.Application.Services.Ticket;
 
-public class BaseAttachmentsService(
+public class BaseAttachmentsService<TTickets>(
     IAttachmentsRepository attachmentsRepository,
     IFileStorageContext fileStorageContext,
-    ITicketsRepository ticketsRepository
+    ITicketsRepository<TTickets> ticketsRepository
 ) : IAttachmentsService
+where TTickets : Tickets
 {
     public async Task<FileUploadResult> UploadFileToTicketAsync(CancellationToken cancellationToken, int ticketId,
         AuthenticatedUser user,
         FileUploadRequest request)
     {
         var ticketExists = await ticketsRepository
-            .GetById(ticketId)
-            .AnyAsync(cancellationToken);
+            .ExistsAsync(ticketId, cancellationToken);
 
         if (!ticketExists)
             throw new TicketNotFoundException();

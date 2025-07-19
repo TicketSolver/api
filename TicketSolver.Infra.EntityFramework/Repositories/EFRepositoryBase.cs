@@ -6,16 +6,18 @@ using TicketSolver.Domain.Extensions;
 using TicketSolver.Domain.Models;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Infra.EntityFramework.Persistence;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts.Interfaces;
 using TicketSolver.Infra.EntityFramework.Repositories.Interfaces;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories;
 
 public abstract class EFRepositoryBase<TEntity> : IEFRepositoryBase<TEntity> where TEntity : class
 {
-    protected readonly EfContext Context;
+    protected readonly IEfContext Context;
     protected readonly DbSet<TEntity> DbSet;
 
-    protected EFRepositoryBase(EfContext context)
+    protected EFRepositoryBase(IEfContext context)
     {
         Context = context;
         DbSet = Context.Set<TEntity>();

@@ -15,7 +15,7 @@ using TicketSolver.Domain.Models;
 namespace TicketSolver.Api.Controllers;
 
 [ApiController]
-public class TicketsController(ITicketsService service) : ShellController
+public class TicketsController(ITicketsService<Tickets> service) : ShellController
 {
     [HttpGet]
     [Authorize(Roles = "1")]

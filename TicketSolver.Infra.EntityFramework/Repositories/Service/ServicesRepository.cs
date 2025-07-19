@@ -3,10 +3,12 @@ using TicketSolver.Domain.Models;
 using TicketSolver.Domain.Persistence.Tables.Service;
 using TicketSolver.Domain.Repositories.Service;
 using TicketSolver.Infra.EntityFramework.Persistence;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts.Interfaces;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.Service;
 
-public class ServiceRequestRepository(EfContext context) : EFRepositoryBase<ServiceRequest>(context), IServiceRequestRepository
+public class ServiceRequestRepository(IEfContext context) : EFRepositoryBase<ServiceRequest>(context), IServiceRequestRepository
 {
     public async Task<ServiceRequest?> GetByIdAsync(int id)
     {

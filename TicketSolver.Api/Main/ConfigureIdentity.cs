@@ -8,6 +8,7 @@ using TicketSolver.Api.Settings;
 using TicketSolver.Application.Configuration;
 using TicketSolver.Domain.Persistence.Tables.User;
 using TicketSolver.Infra.EntityFramework.Persistence;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts;
 using JwtSettings = TicketSolver.Application.Configuration.JwtSettings;
 
 namespace TicketSolver.Api.Main;

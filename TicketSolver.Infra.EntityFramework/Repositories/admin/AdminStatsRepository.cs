@@ -3,10 +3,12 @@ using TicketSolver.Application.Models.admin;
 using TicketSolver.Domain.Enums;
 using TicketSolver.Domain.Repositories.admin;
 using TicketSolver.Infra.EntityFramework.Persistence;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts.Interfaces;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.admin;
 
-public class AdminStatsRepository(EfContext ctx) : IAdminStatsRepository
+public class AdminStatsRepository(IEfContext ctx) : IAdminStatsRepository
 {
     public Task<int> GetTotalTicketsAsync(int tenantId, CancellationToken ct)
         => ctx.Tickets

@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using TicketSolver.Domain.Persistence.Tables.User;
 using TicketSolver.Domain.Repositories.User;
 using TicketSolver.Infra.EntityFramework.Persistence;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts.Interfaces;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.User;
 
-public class UsersRepository(EfContext context) : EFRepositoryBase<Users>(context), IUsersRepository
+public class UsersRepository(IEfContext context) : EFRepositoryBase<Users>(context), IUsersRepository
 {
     public override IQueryable<Users> GetAll()
     {

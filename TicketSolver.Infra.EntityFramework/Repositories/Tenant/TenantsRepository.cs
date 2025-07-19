@@ -4,10 +4,12 @@ using TicketSolver.Domain.Persistence.Tables.Tenant;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Domain.Repositories.Tenant;
 using TicketSolver.Infra.EntityFramework.Persistence;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts.Interfaces;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.Tenant;
 
-public class TenantsRepository(EfContext context) : EFRepositoryBase<Tenants>(context), ITenantsRepository
+public class TenantsRepository(IEfContext context) : EFRepositoryBase<Tenants>(context), ITenantsRepository
 {
     public override IQueryable<Tenants> GetAll()
     {

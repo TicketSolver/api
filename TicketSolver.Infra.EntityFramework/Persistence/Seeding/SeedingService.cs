@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TicketSolver.Domain.Enums;
 using TicketSolver.Domain.Persistence.Tables.Defs;
 using TicketSolver.Domain.Persistence.Tables.Tenant;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts;
 
 namespace TicketSolver.Infra.EntityFramework.Persistence.Seeding;
 

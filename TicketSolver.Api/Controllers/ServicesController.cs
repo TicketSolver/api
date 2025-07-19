@@ -14,44 +14,44 @@ namespace TicketSolver.Api.Controllers;
 public class ServicesController(IServiceRequestService service) : ShellController
 {
     [HttpPost("request")]
-[Authorize(Roles = "1,2,3")]
-public async Task<ActionResult<ServiceResponseDTO>> RequestService(
-    [FromBody] ServiceRequestInputDTO inputRequest, 
-    CancellationToken cancellationToken)
-{
-    try
+    [Authorize(Roles = "1,2,3")]
+    public async Task<ActionResult<ServiceResponseDTO>> RequestService(
+        [FromBody] ServiceRequestInputDTO inputRequest,
+        CancellationToken cancellationToken)
     {
-        if (!AuthenticatedUser.IsAuthenticated || string.IsNullOrEmpty(AuthenticatedUser.UserId))
+        try
         {
-            return Unauthorized(ApiResponse.Fail("Usuário não autenticado. Faça login novamente."));
-        }
-        var request = new ServiceRequestDTO
-        {
-            TicketId = inputRequest.TicketId,
-            RequestedById = AuthenticatedUser.UserId,
-            Address = inputRequest.Address,
-            Comments = inputRequest.Comments
-        };
-        
-        var result = await service.RequestServiceAsync(request, cancellationToken);
-        return Ok(ApiResponse.Ok(result, "Atendimento solicitado com sucesso!"));
-    }
-    catch (TicketNotFoundException)
-    {
-        return NotFound(ApiResponse.Fail("Ticket não encontrado."));
-    }
-    catch (ServiceException ex)
-    {
-        return BadRequest(ApiResponse.Fail(ex.Message));
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Erro geral: {ex.Message}");
-        Console.WriteLine($"Stack trace: {ex.StackTrace}");
-        return BadRequest(ApiResponse.Fail($"Erro interno: {ex.Message}"));
-    }
-}
+            if (!AuthenticatedUser.IsAuthenticated || string.IsNullOrEmpty(AuthenticatedUser.UserId))
+            {
+                return Unauthorized(ApiResponse.Fail("Usuário não autenticado. Faça login novamente."));
+            }
 
+            var request = new ServiceRequestDTO
+            {
+                TicketId = inputRequest.TicketId,
+                RequestedById = AuthenticatedUser.UserId,
+                Address = inputRequest.Address,
+                Comments = inputRequest.Comments
+            };
+
+            var result = await service.RequestServiceAsync(request, cancellationToken);
+            return Ok(ApiResponse.Ok(result, "Atendimento solicitado com sucesso!"));
+        }
+        catch (TicketNotFoundException)
+        {
+            return NotFound(ApiResponse.Fail("Ticket não encontrado."));
+        }
+        catch (ServiceException ex)
+        {
+            return BadRequest(ApiResponse.Fail(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro geral: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            return BadRequest(ApiResponse.Fail($"Erro interno: {ex.Message}"));
+        }
+    }
 
 
     [HttpGet("{id}")]
@@ -74,7 +74,8 @@ public async Task<ActionResult<ServiceResponseDTO>> RequestService(
 
     [HttpGet("ticket/{ticketId}")]
     [Authorize]
-    public async Task<ActionResult<ServiceResponseDTO>> GetServiceByTicket(int ticketId, CancellationToken cancellationToken)
+    public async Task<ActionResult<ServiceResponseDTO>> GetServiceByTicket(int ticketId,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -94,7 +95,7 @@ public async Task<ActionResult<ServiceResponseDTO>> RequestService(
     [Authorize(Roles = "1,2")]
     public async Task<ActionResult> OfferSlots(
         int serviceId,
-        [FromBody] List<AvailableSlotDTO> slots, 
+        [FromBody] List<AvailableSlotDTO> slots,
         CancellationToken cancellationToken)
     {
         try
@@ -155,7 +156,7 @@ public async Task<ActionResult<ServiceResponseDTO>> RequestService(
     [Authorize(Roles = "1,2")]
     public async Task<ActionResult> CompleteService(
         int serviceId,
-        [FromBody] string serviceReport, 
+        [FromBody] string serviceReport,
         CancellationToken cancellationToken)
     {
         try
@@ -210,7 +211,8 @@ public async Task<ActionResult<ServiceResponseDTO>> RequestService(
 
     [HttpGet("user/my-services")]
     [Authorize(Roles = "1,3")]
-    public async Task<ActionResult<IEnumerable<ServiceResponseDTO>>> GetUserServices(CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<ServiceResponseDTO>>> GetUserServices(
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -226,7 +228,7 @@ public async Task<ActionResult<ServiceResponseDTO>> RequestService(
     [HttpGet]
     [Authorize(Roles = "1")]
     public async Task<ActionResult<PaginatedResponse<ServiceResponseDTO>>> GetAllServices(
-        [FromQuery] PaginatedQuery query, 
+        [FromQuery] PaginatedQuery query,
         CancellationToken cancellationToken)
     {
         try

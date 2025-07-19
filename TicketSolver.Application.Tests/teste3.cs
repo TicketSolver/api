@@ -1,4 +1,4 @@
-﻿// GroqClientTests.cs
+// GroqClientTests.cs
 
 using System;
 using Microsoft.Extensions.Configuration;

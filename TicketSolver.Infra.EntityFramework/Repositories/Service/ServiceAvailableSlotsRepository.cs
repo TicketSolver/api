@@ -2,10 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using TicketSolver.Domain.Persistence.Tables.Service;
 using TicketSolver.Domain.Repositories.Service;
 using TicketSolver.Infra.EntityFramework.Persistence;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts;
+using TicketSolver.Infra.EntityFramework.Persistence.Contexts.Interfaces;
 
 namespace TicketSolver.Infra.EntityFramework.Repositories.Service;
 
-public class ServiceAvailableSlotsRepository(EfContext context) : EFRepositoryBase<ServiceAvailableSlots>(context), IServiceAvailableSlotsRepository
+public class ServiceAvailableSlotsRepository(IEfContext context) : EFRepositoryBase<ServiceAvailableSlots>(context), IServiceAvailableSlotsRepository
 {
     public async Task<IEnumerable<ServiceAvailableSlots>> GetByServiceRequestIdAsync(int serviceRequestId)
     {
