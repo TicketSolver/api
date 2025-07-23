@@ -4,13 +4,13 @@ using System.Threading.Tasks;
 using Moq;
 using Xunit;
 using Microsoft.AspNetCore.Mvc;
-using TicketSolver.Api.Application;
 using TicketSolver.Framework.Application;
 using TicketSolver.Framework.Domain;
 using TicketSolver.Application.Models;
 using TicketSolver.Api.Framework;
-using TicketSolver.Api.Application.Interfaces;
+using TicketSolver.Application.Interfaces;
 using TicketSolver.Application.Ports;
+using TicketSolver.Application.Services;
 using TicketSolver.Application.Services.Tenant.Interfaces;
 using TicketSolver.Domain.Persistence.Tables.Tenant;
 

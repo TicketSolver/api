@@ -50,14 +50,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteSolver.Api", "RemoteS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Infra.Notifications", "TicketSolver.Infra.Notifications\TicketSolver.Infra.Notifications.csproj", "{2B7A9644-48BD-42F0-832A-1849ADDD6878}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Framework.Domain", "TicketSolver.Framework.Domain\TicketSolver.Framework.Domain.csproj", "{DACC6051-14AC-485B-AACA-04753B99235B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Framework.Application", "TicketSolver.Framework.Application\TicketSolver.Framework.Application.csproj", "{1F9A8114-108B-4B64-A7DF-89CAC2F0E59A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Api.Application", "TicketSolver.Api.Application\TicketSolver.Api.Application.csproj", "{99E6DF9A-81FE-4E8C-919D-2D2DDC1D31B6}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketSolver.Api.Infra", "TicketSolver.Api.Infra\TicketSolver.Api.Infra.csproj", "{480B02DF-5648-409E-AF1D-C6383AF8672E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -29,10 +29,6 @@
         <ProjectReference Include="..\TicketSolver.Api\TicketSolver.Api.csproj" />
         <ProjectReference Include="..\TicketSolver.Application\TicketSolver.Application.csproj" />
         <ProjectReference Include="..\TicketSolver.Domain\TicketSolver.Domain.csproj" />
-        <ProjectReference Include="..\TicketSolver.Api.Application\TicketSolver.Api.Application.csproj" />
-        <ProjectReference Include="..\TicketSolver.Api.Infra\TicketSolver.Api.Infra.csproj" />
-        <ProjectReference Include="..\TicketSolver.Framework.Application\TicketSolver.Framework.Application.csproj" />
-        <ProjectReference Include="..\TicketSolver.Framework.Domain\TicketSolver.Framework.Domain.csproj" />
     </ItemGroup>
 
 </Project>

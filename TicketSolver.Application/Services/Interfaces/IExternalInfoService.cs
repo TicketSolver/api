@@ -1,7 +1,7 @@
 using TicketSolver.Domain.Persistence.Tables.Tenant;
 using TicketSolver.Framework.Domain;
 
-namespace TicketSolver.Api.Application.Interfaces;
+namespace TicketSolver.Application.Interfaces;
 
 public interface IExternalInfoService
 {

@@ -16,12 +16,10 @@ using TicketSolver.Application.Services.Ticket;
 using TicketSolver.Application.Services.Ticket.Interfaces;
 using TicketSolver.Application.Services.User;
 using TicketSolver.Application.Services.User.Interfaces;
-using TicketSolver.Domain.Persistence.Tables.Service;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Infra.GeminiAI;
-using TicketSolver.Api.Application;
-using TicketSolver.Api.Application.Interfaces;
 using TicketSolver.Api.Infra;
+using TicketSolver.Application.Interfaces;
 using TicketSolver.Framework.Application;
 using TicketSolver.Framework.Domain;
 

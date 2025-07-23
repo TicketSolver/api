@@ -1,6 +1,4 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+
 using TicketSolver.Application.Models;
 using TicketSolver.Application.Ports;
 using TicketSolver.Domain.Persistence.Tables.Tenant;
