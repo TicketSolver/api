@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Moq;
 using Xunit;
 using Microsoft.AspNetCore.Mvc;
-using TicketSolver.Framework.Application;
 using TicketSolver.Framework.Domain;
 using TicketSolver.Application.Models;
 using TicketSolver.Api.Framework;

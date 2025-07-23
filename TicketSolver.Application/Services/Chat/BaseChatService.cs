@@ -300,6 +300,11 @@ public class BaseChatService<TTickets>(
     }
 
 
+    public Task<string> CreateTicketAsync(CancellationToken cancellationToken, TicketDTO ticketDto)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<ChatMessageResponseDto> SendMessageAsync(
         SendMessageRequestDto request,
         CancellationToken cancellationToken = default

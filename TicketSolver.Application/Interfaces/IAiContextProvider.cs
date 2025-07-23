@@ -1,9 +1,7 @@
-using System.Threading;
-using System.Threading.Tasks;
 using TicketSolver.Domain.Persistence.Tables.Tenant;
 using TicketSolver.Framework.Domain;
 
-namespace TicketSolver.Framework.Application;
+namespace TicketSolver.Application.interfaces;
 
 public interface IAiContextProvider
 {

@@ -2,9 +2,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TicketSolver.Application.Models;
+using TicketSolver.Application.Services.Chat.Interfaces;
 using TicketSolver.Application.Services.Tenant.Interfaces;
 using TicketSolver.Domain.Persistence.Tables.Tenant;
-using TicketSolver.Framework.Application;
 using TicketSolver.Framework.Domain;
 
 namespace TicketSolver.Api.Framework;

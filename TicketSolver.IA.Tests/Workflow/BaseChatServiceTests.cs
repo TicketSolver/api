@@ -1,10 +1,10 @@
-using System.Threading;
-using System.Threading.Tasks;
+
 using Moq;
+using TicketSolver.Application.interfaces;
 using TicketSolver.Application.Models;
 using TicketSolver.Application.Ports;
+using TicketSolver.Application.Services;
 using TicketSolver.Domain.Persistence.Tables.Tenant;
-using TicketSolver.Framework.Application;
 using TicketSolver.Framework.Domain;
 using Xunit;
 

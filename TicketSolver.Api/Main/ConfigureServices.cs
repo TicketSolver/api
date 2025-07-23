@@ -19,8 +19,9 @@ using TicketSolver.Application.Services.User.Interfaces;
 using TicketSolver.Domain.Persistence.Tables.Ticket;
 using TicketSolver.Infra.GeminiAI;
 using TicketSolver.Api.Infra;
+using TicketSolver.Application.interfaces;
 using TicketSolver.Application.Interfaces;
-using TicketSolver.Framework.Application;
+using TicketSolver.Application.Services.Chat.Interfaces;
 using TicketSolver.Framework.Domain;
 
 

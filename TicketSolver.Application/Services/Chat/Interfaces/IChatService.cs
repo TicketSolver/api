@@ -5,6 +5,7 @@ namespace TicketSolver.Application.Services.Chat.Interfaces;
 
 public interface IChatService
 {
+    Task<string> CreateTicketAsync(CancellationToken cancellationToken, TicketDTO ticketDto);
     Task<ChatMessageResponseDto> SendMessageAsync(SendMessageRequestDto request, CancellationToken cancellationToken = default);
     Task<ChatHistoryResponseDto> GetChatHistoryAsync(int ticketId, CancellationToken cancellationToken = default);
     Task<ChatHistoryResponseDto> GetChatHistoryAsync(int ticketId, int page, int pageSize, CancellationToken cancellationToken = default);
